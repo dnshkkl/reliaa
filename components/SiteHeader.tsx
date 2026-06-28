@@ -16,16 +16,17 @@ export default function SiteHeader() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-sand/70 bg-cream/85 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+    <header className="sticky top-0 z-50 border-b border-sand/70 bg-cream/90 backdrop-blur">
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3 md:px-6 md:py-4">
         <Link href="/" className="group flex items-baseline gap-1">
-          <span className="font-serif text-2xl font-semibold tracking-tight text-ink">
+          <span className="font-serif text-xl font-semibold tracking-tight text-ink sm:text-2xl">
             Reliaa
           </span>
           <span className="h-1.5 w-1.5 rounded-full bg-clay transition-transform group-hover:scale-125" />
         </Link>
 
-        <nav className="hidden items-center gap-8 md:flex">
+        {/* Desktop nav */}
+        <nav className="hidden items-center gap-6 md:flex lg:gap-8">
           {links.map((link) => {
             const active =
               link.href === pathname ||
@@ -50,29 +51,47 @@ export default function SiteHeader() {
           </Link>
         </nav>
 
+        {/* Mobile hamburger */}
         <button
           type="button"
           aria-label="Toggle menu"
           onClick={() => setOpen((v) => !v)}
-          className="flex h-10 w-10 items-center justify-center rounded-full border border-sand md:hidden"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-sand md:hidden"
         >
-          <span className="text-lg">{open ? "✕" : "☰"}</span>
+          <span className="text-base leading-none">{open ? "✕" : "☰"}</span>
         </button>
       </div>
 
+      {/* Mobile drawer */}
       {open && (
-        <nav className="border-t border-sand/70 bg-cream px-6 py-4 md:hidden">
-          <div className="flex flex-col gap-4">
-            {links.map((link) => (
+        <nav className="border-t border-sand/70 bg-cream px-5 pb-5 pt-4 md:hidden">
+          <div className="flex flex-col gap-1">
+            {links.map((link) => {
+              const active =
+                link.href === pathname ||
+                (link.href !== "/" && pathname.startsWith(link.href));
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => setOpen(false)}
+                  className={`rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-sand/40 hover:text-clay ${
+                    active ? "text-clay" : "text-espresso"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              );
+            })}
+            <div className="mt-3 border-t border-sand/60 pt-3">
               <Link
-                key={link.href}
-                href={link.href}
+                href="/collection"
                 onClick={() => setOpen(false)}
-                className="text-sm text-espresso hover:text-clay"
+                className="block rounded-full bg-ink px-5 py-2.5 text-center text-sm text-cream hover:bg-espresso"
               >
-                {link.label}
+                View Collection
               </Link>
-            ))}
+            </div>
           </div>
         </nav>
       )}

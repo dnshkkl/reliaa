@@ -30,8 +30,8 @@ export default async function ProductDetailPage({
     <>
       <SiteHeader />
 
-      <main className="mx-auto max-w-6xl px-6 py-12">
-        <nav className="mb-8 text-sm text-espresso/60">
+      <main className="mx-auto max-w-6xl px-5 py-8 md:px-6 md:py-12">
+        <nav className="mb-6 text-sm text-espresso/60 md:mb-8">
           <Link href="/collection" className="hover:text-clay">
             Collection
           </Link>
@@ -48,34 +48,34 @@ export default async function ProductDetailPage({
           )}
         </nav>
 
-        <div className="grid gap-10 md:grid-cols-2">
+        <div className="grid gap-8 md:grid-cols-2 md:gap-10">
           <ImageGallery images={product.images} alt={product.name} />
 
           <div className="flex flex-col justify-center">
             {category && (
-              <span className="text-sm uppercase tracking-[0.3em] text-clay">
+              <span className="text-xs uppercase tracking-[0.3em] text-clay sm:text-sm">
                 {category.name}
               </span>
             )}
-            <h1 className="mt-3 font-serif text-4xl text-ink md:text-5xl">
+            <h1 className="mt-2 font-serif text-3xl text-ink sm:text-4xl md:mt-3 lg:text-5xl">
               {product.name}
             </h1>
             {product.description && (
-              <p className="mt-6 whitespace-pre-line leading-relaxed text-espresso/80">
+              <p className="mt-4 whitespace-pre-line leading-relaxed text-espresso/80 md:mt-6">
                 {product.description}
               </p>
             )}
 
-            <div className="mt-8 flex flex-wrap gap-4">
+            <div className="mt-6 flex flex-wrap gap-3 md:mt-8">
               <Link
                 href={`/contact?subject=${encodeURIComponent(product.name)}`}
-                className="rounded-full bg-ink px-7 py-3 text-sm text-cream transition-colors hover:bg-espresso"
+                className="rounded-full bg-ink px-6 py-2.5 text-sm text-cream transition-colors hover:bg-espresso"
               >
                 Enquire about this piece
               </Link>
               <Link
                 href="/collection"
-                className="rounded-full border border-ink/20 px-7 py-3 text-sm text-ink transition-colors hover:border-ink"
+                className="rounded-full border border-ink/20 px-6 py-2.5 text-sm text-ink transition-colors hover:border-ink"
               >
                 Back to collection
               </Link>
@@ -84,9 +84,9 @@ export default async function ProductDetailPage({
         </div>
 
         {related.length > 0 && (
-          <section className="mt-20">
-            <h2 className="font-serif text-2xl text-ink">You may also like</h2>
-            <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <section className="mt-14 md:mt-20">
+            <h2 className="font-serif text-xl text-ink sm:text-2xl">You may also like</h2>
+            <div className="mt-5 grid gap-5 sm:grid-cols-2 md:mt-6 md:gap-6 lg:grid-cols-3">
               {related.map((p) => (
                 <Link
                   key={p.id}
@@ -101,8 +101,8 @@ export default async function ProductDetailPage({
                       className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                   </div>
-                  <div className="p-5">
-                    <h3 className="font-serif text-xl text-ink">{p.name}</h3>
+                  <div className="p-4 sm:p-5">
+                    <h3 className="font-serif text-lg text-ink sm:text-xl">{p.name}</h3>
                   </div>
                 </Link>
               ))}

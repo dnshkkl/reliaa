@@ -3,8 +3,8 @@ import Link from "next/link";
 export default function SiteFooter() {
   return (
     <footer id="contact" className="border-t border-sand/70 bg-espresso text-cream">
-      <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 md:grid-cols-3">
-        <div>
+      <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 md:gap-10 md:px-6 md:py-16 lg:grid-cols-3">
+        <div className="sm:col-span-2 lg:col-span-1">
           <div className="flex items-baseline gap-1">
             <span className="font-serif text-2xl font-semibold">Reliaa</span>
             <span className="h-1.5 w-1.5 rounded-full bg-clay" />
@@ -52,7 +52,7 @@ export default function SiteFooter() {
         </div>
       </div>
 
-      <div className="border-t border-cream/10 px-6 py-6">
+      <div className="border-t border-cream/10 px-5 py-4 md:px-6 md:py-6">
         <p className="mx-auto max-w-6xl text-xs text-cream/50">
           © {new Date().getFullYear()} Reliaa. All rights reserved.
         </p>

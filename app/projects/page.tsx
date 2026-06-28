@@ -15,15 +15,15 @@ export default async function ProjectsPage() {
     <>
       <SiteHeader />
 
-      <main className="mx-auto max-w-6xl px-6 py-16">
-        <header className="mb-12 max-w-2xl">
-          <span className="text-sm uppercase tracking-[0.3em] text-clay">
+      <main className="mx-auto max-w-6xl px-5 py-10 md:px-6 md:py-16">
+        <header className="mb-8 max-w-2xl md:mb-12">
+          <span className="text-xs uppercase tracking-[0.3em] text-clay sm:text-sm">
             Projects
           </span>
-          <h1 className="mt-4 font-serif text-5xl text-ink">
+          <h1 className="mt-3 font-serif text-3xl text-ink sm:text-4xl md:mt-4 md:text-5xl">
             Our pieces, in place
           </h1>
-          <p className="mt-4 text-lg leading-relaxed text-espresso/80">
+          <p className="mt-3 text-base leading-relaxed text-espresso/80 md:mt-4 md:text-lg">
             A look at Reliaa furniture styled in real homes and spaces — for a
             sense of how each piece lives in a room.
           </p>
@@ -32,7 +32,7 @@ export default async function ProjectsPage() {
         {projects.length === 0 ? (
           <p className="text-espresso/60">Projects are coming soon.</p>
         ) : (
-          <div className="grid gap-8 md:grid-cols-2">
+          <div className="grid gap-5 sm:grid-cols-2 md:gap-8">
             {projects.map((project, i) => (
               <Reveal key={project.id} delay={(i % 2) * 100}>
                 <Link
@@ -47,7 +47,7 @@ export default async function ProjectsPage() {
                       className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                   </div>
-                  <div className="p-6">
+                  <div className="p-5 md:p-6">
                     <div className="flex items-center gap-3 text-xs uppercase tracking-widest text-clay">
                       {project.type && <span>{project.type}</span>}
                       {project.type && project.location && (
@@ -55,7 +55,7 @@ export default async function ProjectsPage() {
                       )}
                       {project.location && <span>{project.location}</span>}
                     </div>
-                    <h2 className="mt-2 font-serif text-2xl text-ink">
+                    <h2 className="mt-2 font-serif text-xl text-ink sm:text-2xl">
                       {project.title}
                     </h2>
                   </div>

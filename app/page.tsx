@@ -37,29 +37,29 @@ export default async function HomePage() {
       <main>
         {/* Hero */}
         <section className="relative overflow-hidden">
-          <div className="mx-auto grid max-w-6xl items-center gap-12 px-6 py-20 md:grid-cols-2 md:py-28">
+          <div className="mx-auto grid max-w-6xl items-center gap-8 px-5 py-12 md:gap-12 md:px-6 md:py-20 lg:grid-cols-2 lg:py-28">
             <div className="animate-fade-up">
-              <span className="text-sm uppercase tracking-[0.3em] text-clay">
+              <span className="text-xs uppercase tracking-[0.3em] text-clay sm:text-sm">
                 Contemporary Furniture
               </span>
-              <h1 className="mt-5 font-serif text-5xl leading-[1.05] text-ink md:text-6xl">
+              <h1 className="mt-4 font-serif text-4xl leading-[1.05] text-ink sm:text-5xl md:text-5xl lg:text-6xl">
                 Pieces that make a house feel like home.
               </h1>
-              <p className="mt-6 max-w-md text-lg leading-relaxed text-espresso/80">
+              <p className="mt-5 max-w-md text-base leading-relaxed text-espresso/80 sm:text-lg">
                 Reliaa curates a collection of sofas, chairs and furniture
                 designed around clean lines, natural materials and quiet
                 comfort.
               </p>
-              <div className="mt-8 flex flex-wrap gap-4">
+              <div className="mt-7 flex flex-wrap gap-3">
                 <Link
                   href="/collection"
-                  className="rounded-full bg-ink px-7 py-3 text-sm text-cream transition-colors hover:bg-espresso"
+                  className="rounded-full bg-ink px-6 py-2.5 text-sm text-cream transition-colors hover:bg-espresso sm:px-7 sm:py-3"
                 >
                   Explore the Collection
                 </Link>
                 <Link
                   href="/projects"
-                  className="rounded-full border border-ink/20 px-7 py-3 text-sm text-ink transition-colors hover:border-ink"
+                  className="rounded-full border border-ink/20 px-6 py-2.5 text-sm text-ink transition-colors hover:border-ink sm:px-7 sm:py-3"
                 >
                   View Projects
                 </Link>
@@ -67,7 +67,7 @@ export default async function HomePage() {
             </div>
 
             <div className="animate-fade-up [animation-delay:120ms]">
-              <div className="relative aspect-[4/5] overflow-hidden rounded-[2rem] bg-sand">
+              <div className="relative aspect-[3/2] overflow-hidden rounded-2xl bg-sand sm:aspect-[4/3] lg:aspect-[4/5] lg:rounded-[2rem]">
                 <HeroSlideshow images={heroImages} />
               </div>
             </div>
@@ -75,15 +75,15 @@ export default async function HomePage() {
         </section>
 
         {/* Categories */}
-        <section id="categories" className="bg-white py-20">
-          <div className="mx-auto max-w-6xl px-6">
+        <section id="categories" className="bg-white py-14 md:py-20">
+          <div className="mx-auto max-w-6xl px-5 md:px-6">
             <Reveal>
               <div className="flex items-end justify-between">
                 <div>
-                  <span className="text-sm uppercase tracking-[0.3em] text-clay">
+                  <span className="text-xs uppercase tracking-[0.3em] text-clay sm:text-sm">
                     Explore
                   </span>
-                  <h2 className="mt-3 font-serif text-4xl text-ink">
+                  <h2 className="mt-2 font-serif text-3xl text-ink md:mt-3 md:text-4xl">
                     Our Categories
                   </h2>
                 </div>
@@ -96,15 +96,15 @@ export default async function HomePage() {
               </div>
             </Reveal>
 
-            <div className="mt-12 grid gap-6 md:grid-cols-3">
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 md:mt-12 md:gap-6 lg:grid-cols-3">
               {categories.map((cat, i) => (
                 <Reveal key={cat.id} delay={i * 90}>
                   <Link
                     href={`/collection?category=${cat.slug}`}
-                    className="group block h-full rounded-2xl border border-sand/70 bg-cream p-8 transition-all hover:-translate-y-1 hover:border-clay hover:shadow-lg"
+                    className="group block h-full rounded-2xl border border-sand/70 bg-cream p-5 transition-all hover:-translate-y-1 hover:border-clay hover:shadow-lg sm:p-6 md:p-8"
                   >
                     <div className="flex items-center justify-between">
-                      <h3 className="font-serif text-2xl text-ink">
+                      <h3 className="font-serif text-xl text-ink sm:text-2xl">
                         {cat.name}
                       </h3>
                       <span className="text-sm text-espresso/50">
@@ -112,10 +112,10 @@ export default async function HomePage() {
                         {countFor(cat.id) === 1 ? "piece" : "pieces"}
                       </span>
                     </div>
-                    <p className="mt-3 text-sm leading-relaxed text-espresso/70">
+                    <p className="mt-2 text-sm leading-relaxed text-espresso/70 md:mt-3">
                       {cat.description}
                     </p>
-                    <span className="mt-6 inline-block text-sm text-clay opacity-0 transition-opacity group-hover:opacity-100">
+                    <span className="mt-4 inline-block text-sm text-clay opacity-0 transition-opacity group-hover:opacity-100 md:mt-6">
                       Explore {cat.name} →
                     </span>
                   </Link>
@@ -127,18 +127,18 @@ export default async function HomePage() {
 
         {/* Featured */}
         {featured.length > 0 && (
-          <section className="py-20">
-            <div className="mx-auto max-w-6xl px-6">
+          <section className="py-14 md:py-20">
+            <div className="mx-auto max-w-6xl px-5 md:px-6">
               <Reveal>
-                <span className="text-sm uppercase tracking-[0.3em] text-clay">
+                <span className="text-xs uppercase tracking-[0.3em] text-clay sm:text-sm">
                   Latest
                 </span>
-                <h2 className="mt-3 font-serif text-4xl text-ink">
+                <h2 className="mt-2 font-serif text-3xl text-ink md:mt-3 md:text-4xl">
                   New in the Collection
                 </h2>
               </Reveal>
 
-              <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-8 grid gap-5 sm:grid-cols-2 md:mt-12 md:gap-6 lg:grid-cols-3">
                 {featured.map((p, i) => (
                   <Reveal key={p.id} delay={(i % 3) * 90}>
                     <Link
@@ -153,8 +153,8 @@ export default async function HomePage() {
                           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
                       </div>
-                      <div className="p-5">
-                        <h3 className="font-serif text-xl text-ink">{p.name}</h3>
+                      <div className="p-4 sm:p-5">
+                        <h3 className="font-serif text-lg text-ink sm:text-xl">{p.name}</h3>
                         {p.description && (
                           <p className="mt-2 line-clamp-2 text-sm text-espresso/70">
                             {p.description}
@@ -166,7 +166,7 @@ export default async function HomePage() {
                 ))}
               </div>
 
-              <div className="mt-12 text-center">
+              <div className="mt-10 text-center md:mt-12">
                 <Link
                   href="/collection"
                   className="rounded-full bg-ink px-7 py-3 text-sm text-cream hover:bg-espresso"
@@ -180,15 +180,15 @@ export default async function HomePage() {
 
         {/* Projects teaser */}
         {latestProjects.length > 0 && (
-          <section className="bg-white py-20">
-            <div className="mx-auto max-w-6xl px-6">
+          <section className="bg-white py-14 md:py-20">
+            <div className="mx-auto max-w-6xl px-5 md:px-6">
               <Reveal>
                 <div className="flex items-end justify-between">
                   <div>
-                    <span className="text-sm uppercase tracking-[0.3em] text-clay">
+                    <span className="text-xs uppercase tracking-[0.3em] text-clay sm:text-sm">
                       Projects
                     </span>
-                    <h2 className="mt-3 font-serif text-4xl text-ink">
+                    <h2 className="mt-2 font-serif text-3xl text-ink md:mt-3 md:text-4xl">
                       Our pieces, in place
                     </h2>
                   </div>
@@ -201,7 +201,7 @@ export default async function HomePage() {
                 </div>
               </Reveal>
 
-              <div className="mt-12 grid gap-8 md:grid-cols-2">
+              <div className="mt-8 grid gap-5 md:mt-12 md:grid-cols-2 md:gap-8">
                 {latestProjects.map((project, i) => (
                   <Reveal key={project.id} delay={i * 100}>
                     <Link
@@ -216,7 +216,7 @@ export default async function HomePage() {
                           className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
                         />
                       </div>
-                      <div className="bg-cream p-6">
+                      <div className="bg-cream p-5 md:p-6">
                         <div className="flex items-center gap-3 text-xs uppercase tracking-widest text-clay">
                           {project.type && <span>{project.type}</span>}
                           {project.type && project.location && (
@@ -224,7 +224,7 @@ export default async function HomePage() {
                           )}
                           {project.location && <span>{project.location}</span>}
                         </div>
-                        <h3 className="mt-2 font-serif text-2xl text-ink">
+                        <h3 className="mt-2 font-serif text-xl text-ink sm:text-2xl">
                           {project.title}
                         </h3>
                       </div>
@@ -232,24 +232,33 @@ export default async function HomePage() {
                   </Reveal>
                 ))}
               </div>
+
+              <div className="mt-8 text-center md:hidden">
+                <Link
+                  href="/projects"
+                  className="text-sm text-espresso hover:text-clay"
+                >
+                  All projects →
+                </Link>
+              </div>
             </div>
           </section>
         )}
 
         {/* Story / banner */}
-        <section className="bg-espresso py-20 text-cream">
-          <div className="mx-auto max-w-4xl px-6 text-center">
+        <section className="bg-espresso py-14 text-cream md:py-20">
+          <div className="mx-auto max-w-4xl px-5 text-center md:px-6">
             <Reveal>
-              <span className="text-sm uppercase tracking-[0.3em] text-clay">
+              <span className="text-xs uppercase tracking-[0.3em] text-clay sm:text-sm">
                 The Reliaa Approach
               </span>
-              <p className="mt-6 font-serif text-3xl leading-snug md:text-4xl">
+              <p className="mt-5 font-serif text-2xl leading-snug sm:text-3xl md:text-4xl">
                 Every piece in our showroom is chosen for craftsmanship, comfort
                 and a design that lasts well beyond trends.
               </p>
               <Link
                 href="/contact"
-                className="mt-10 inline-block rounded-full border border-cream/30 px-7 py-3 text-sm transition-colors hover:border-cream"
+                className="mt-8 inline-block rounded-full border border-cream/30 px-7 py-3 text-sm transition-colors hover:border-cream"
               >
                 Visit Our Showroom
               </Link>

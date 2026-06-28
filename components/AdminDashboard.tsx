@@ -39,38 +39,38 @@ export default function AdminDashboard({
   return (
     <div className="min-h-screen bg-cream">
       <header className="border-b border-sand/70 bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3 md:px-6 md:py-4">
           <div className="flex items-baseline gap-2">
-            <span className="font-serif text-xl font-semibold text-ink">
+            <span className="font-serif text-lg font-semibold text-ink sm:text-xl">
               Reliaa
             </span>
             <span className="text-sm text-espresso/60">Admin</span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <Link
               href="/"
               target="_blank"
-              className="text-sm text-espresso hover:text-clay"
+              className="hidden text-sm text-espresso hover:text-clay sm:block"
             >
               View site ↗
             </Link>
             <button
               onClick={logout}
-              className="rounded-full bg-ink px-4 py-1.5 text-sm text-cream hover:bg-espresso"
+              className="rounded-full bg-ink px-3 py-1.5 text-sm text-cream hover:bg-espresso sm:px-4"
             >
               Sign out
             </button>
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="mx-auto max-w-6xl px-6">
-          <nav className="flex gap-1 overflow-x-auto">
+        {/* Tabs — scrollable on mobile */}
+        <div className="mx-auto max-w-6xl px-5 md:px-6">
+          <nav className="-mb-px flex gap-0 overflow-x-auto scrollbar-none">
             {tabs.map((t) => (
               <button
                 key={t.id}
                 onClick={() => setTab(t.id)}
-                className={`relative whitespace-nowrap border-b-2 px-4 py-3 text-sm transition-colors ${
+                className={`relative shrink-0 whitespace-nowrap border-b-2 px-3 py-3 text-xs transition-colors sm:px-4 sm:text-sm ${
                   tab === t.id
                     ? "border-clay text-ink"
                     : "border-transparent text-espresso/60 hover:text-ink"
@@ -78,7 +78,7 @@ export default function AdminDashboard({
               >
                 {t.label}
                 {t.badge ? (
-                  <span className="ml-2 rounded-full bg-clay px-2 py-0.5 text-xs text-white">
+                  <span className="ml-1.5 rounded-full bg-clay px-1.5 py-0.5 text-xs text-white">
                     {t.badge}
                   </span>
                 ) : null}
@@ -88,7 +88,7 @@ export default function AdminDashboard({
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl space-y-12 px-6 py-10">
+      <main className="mx-auto max-w-6xl space-y-8 px-5 py-8 md:space-y-12 md:px-6 md:py-10">
         {tab === "products" && (
           <>
             <AddProductForm categories={categories} onDone={refresh} />
@@ -816,9 +816,9 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <section className="rounded-2xl bg-white/60 p-6 ring-1 ring-sand/60 md:p-8">
-      <div className="mb-6">
-        <h2 className="font-serif text-2xl text-ink">{title}</h2>
+    <section className="rounded-2xl bg-white/60 p-5 ring-1 ring-sand/60 md:p-8">
+      <div className="mb-5 md:mb-6">
+        <h2 className="font-serif text-xl text-ink md:text-2xl">{title}</h2>
         {subtitle && <p className="mt-1 text-sm text-espresso/60">{subtitle}</p>}
       </div>
       {children}

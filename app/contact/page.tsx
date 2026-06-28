@@ -15,21 +15,21 @@ export default async function ContactPage({
     <>
       <SiteHeader />
 
-      <main className="mx-auto max-w-6xl px-6 py-16">
-        <div className="grid gap-12 md:grid-cols-2">
+      <main className="mx-auto max-w-6xl px-5 py-10 md:px-6 md:py-16">
+        <div className="grid gap-8 md:grid-cols-2 md:gap-12">
           <div>
-            <span className="text-sm uppercase tracking-[0.3em] text-clay">
+            <span className="text-xs uppercase tracking-[0.3em] text-clay sm:text-sm">
               Contact
             </span>
-            <h1 className="mt-4 font-serif text-5xl text-ink">
+            <h1 className="mt-3 font-serif text-4xl text-ink md:mt-4 md:text-5xl">
               Let&apos;s talk
             </h1>
-            <p className="mt-4 max-w-md text-lg leading-relaxed text-espresso/80">
+            <p className="mt-3 max-w-md text-base leading-relaxed text-espresso/80 md:mt-4 md:text-lg">
               Visit our showroom or send us a message about any piece or project.
               We&apos;d love to help you find the right furniture for your space.
             </p>
 
-            <div className="mt-10 space-y-6 text-espresso/80">
+            <div className="mt-8 space-y-5 text-espresso/80 md:mt-10 md:space-y-6">
               <div>
                 <h3 className="text-sm font-semibold uppercase tracking-widest text-clay">
                   Showroom

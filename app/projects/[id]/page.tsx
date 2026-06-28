@@ -20,14 +20,14 @@ export default async function ProjectDetailPage({
     <>
       <SiteHeader />
 
-      <main className="mx-auto max-w-5xl px-6 py-12">
-        <nav className="mb-8 text-sm text-espresso/60">
+      <main className="mx-auto max-w-5xl px-5 py-8 md:px-6 md:py-12">
+        <nav className="mb-6 text-sm text-espresso/60 md:mb-8">
           <Link href="/projects" className="hover:text-clay">
             Projects
           </Link>
         </nav>
 
-        <header className="mb-10 max-w-2xl">
+        <header className="mb-7 max-w-2xl md:mb-10">
           <div className="flex items-center gap-3 text-xs uppercase tracking-widest text-clay">
             {project.type && <span>{project.type}</span>}
             {project.type && project.location && (
@@ -35,11 +35,11 @@ export default async function ProjectDetailPage({
             )}
             {project.location && <span>{project.location}</span>}
           </div>
-          <h1 className="mt-3 font-serif text-4xl text-ink md:text-5xl">
+          <h1 className="mt-2 font-serif text-3xl text-ink sm:text-4xl md:mt-3 lg:text-5xl">
             {project.title}
           </h1>
           {project.description && (
-            <p className="mt-6 whitespace-pre-line leading-relaxed text-espresso/80">
+            <p className="mt-4 whitespace-pre-line leading-relaxed text-espresso/80 md:mt-6">
               {project.description}
             </p>
           )}
@@ -47,7 +47,7 @@ export default async function ProjectDetailPage({
 
         <ImageGallery images={project.images} alt={project.title} />
 
-        <div className="mt-12">
+        <div className="mt-10 md:mt-12">
           <Link
             href="/contact"
             className="rounded-full bg-ink px-7 py-3 text-sm text-cream transition-colors hover:bg-espresso"

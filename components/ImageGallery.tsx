@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 
-/** Main image + thumbnail strip, used on product and project detail pages. */
 export default function ImageGallery({
   images,
   alt,
@@ -29,12 +28,12 @@ export default function ImageGallery({
       </div>
 
       {safe.length > 1 && (
-        <div className="mt-4 flex flex-wrap gap-3">
+        <div className="mt-3 flex flex-wrap gap-2 md:mt-4 md:gap-3">
           {safe.map((src, i) => (
             <button
               key={src}
               onClick={() => setActive(i)}
-              className={`h-20 w-24 overflow-hidden rounded-lg ring-2 transition ${
+              className={`h-16 w-20 overflow-hidden rounded-lg ring-2 transition sm:h-20 sm:w-24 ${
                 i === active ? "ring-clay" : "ring-transparent hover:ring-sand"
               }`}
             >

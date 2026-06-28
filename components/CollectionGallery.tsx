@@ -28,7 +28,7 @@ export default function CollectionGallery({
   return (
     <div>
       {/* Filter bar */}
-      <div className="flex flex-wrap items-center gap-3">
+      <div className="flex flex-wrap items-center gap-2 md:gap-3">
         <FilterChip
           label="All"
           active={active === "all"}
@@ -45,11 +45,11 @@ export default function CollectionGallery({
       </div>
 
       {filtered.length === 0 ? (
-        <p className="mt-16 text-center text-espresso/60">
+        <p className="mt-12 text-center text-espresso/60 md:mt-16">
           No pieces in this category yet. Please check back soon.
         </p>
       ) : (
-        <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-8 grid grid-cols-1 gap-5 sm:grid-cols-2 md:mt-10 md:gap-6 lg:grid-cols-3">
           {filtered.map((p) => (
             <Link
               key={p.id}
@@ -69,11 +69,11 @@ export default function CollectionGallery({
                   </span>
                 )}
               </div>
-              <div className="p-5">
+              <div className="p-4 sm:p-5">
                 <span className="text-xs uppercase tracking-widest text-clay">
                   {categoryName(p.categoryId)}
                 </span>
-                <h3 className="mt-1 font-serif text-xl text-ink">{p.name}</h3>
+                <h3 className="mt-1 font-serif text-lg text-ink sm:text-xl">{p.name}</h3>
                 {p.description && (
                   <p className="mt-2 line-clamp-2 text-sm text-espresso/70">
                     {p.description}
@@ -100,7 +100,7 @@ function FilterChip({
   return (
     <button
       onClick={onClick}
-      className={`rounded-full px-5 py-2 text-sm transition-colors ${
+      className={`rounded-full px-4 py-1.5 text-sm transition-colors sm:px-5 sm:py-2 ${
         active
           ? "bg-ink text-cream"
           : "bg-white text-espresso ring-1 ring-sand hover:bg-sand/40"

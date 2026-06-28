@@ -23,15 +23,15 @@ export default async function CollectionPage({
     <>
       <SiteHeader />
 
-      <main className="mx-auto max-w-6xl px-6 py-16">
-        <header className="mb-12 max-w-2xl">
-          <span className="text-sm uppercase tracking-[0.3em] text-clay">
+      <main className="mx-auto max-w-6xl px-5 py-10 md:px-6 md:py-16">
+        <header className="mb-8 max-w-2xl md:mb-12">
+          <span className="text-xs uppercase tracking-[0.3em] text-clay sm:text-sm">
             The Collection
           </span>
-          <h1 className="mt-4 font-serif text-5xl text-ink">
+          <h1 className="mt-3 font-serif text-3xl text-ink sm:text-4xl md:mt-4 md:text-5xl">
             Explore our furniture
           </h1>
-          <p className="mt-4 text-lg leading-relaxed text-espresso/80">
+          <p className="mt-3 text-base leading-relaxed text-espresso/80 md:mt-4 md:text-lg">
             Browse the full range of pieces in our showroom. Select a category
             to narrow your view, and tap any piece to see it up close.
           </p>
