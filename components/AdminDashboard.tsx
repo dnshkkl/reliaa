@@ -171,7 +171,7 @@ export default function AdminDashboard({
   );
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#f0ede8]">
+    <div className="flex h-screen overflow-hidden bg-cream">
       {/* ── Sidebar (desktop) ── */}
       <aside className="hidden w-60 flex-shrink-0 flex-col border-r border-sand/70 bg-white lg:flex">
         {sidebarContent}
@@ -324,7 +324,7 @@ function ProductsSection({
               {error   && <p className="text-xs text-red-600">{error}</p>}
               {success && <p className="text-xs text-green-700">{success}</p>}
               <button type="submit" disabled={busy}
-                className="w-full rounded-lg bg-ink py-2.5 text-sm text-cream transition-colors hover:bg-espresso disabled:opacity-60">
+                className="w-full rounded-lg bg-clay py-2.5 text-sm text-white transition-colors hover:bg-espresso disabled:opacity-60">
                 {busy ? "Uploading…" : "Add to collection"}
               </button>
             </form>
@@ -447,7 +447,7 @@ function ProjectsSection({
             {error   && <p className="text-xs text-red-600">{error}</p>}
             {success && <p className="text-xs text-green-700">{success}</p>}
             <button type="submit" disabled={busy}
-              className="w-full rounded-lg bg-ink py-2.5 text-sm text-cream transition-colors hover:bg-espresso disabled:opacity-60">
+              className="w-full rounded-lg bg-clay py-2.5 text-sm text-white transition-colors hover:bg-espresso disabled:opacity-60">
               {busy ? "Uploading…" : "Publish project"}
             </button>
           </form>
@@ -573,7 +573,7 @@ function CategoriesSection({
             </Field>
             {error && <p className="text-xs text-red-600">{error}</p>}
             <button type="submit" disabled={busy}
-              className="w-full rounded-lg bg-ink py-2.5 text-sm text-cream transition-colors hover:bg-espresso disabled:opacity-60">
+              className="w-full rounded-lg bg-clay py-2.5 text-sm text-white transition-colors hover:bg-espresso disabled:opacity-60">
               {busy ? "Adding…" : "Add category"}
             </button>
           </form>
@@ -740,7 +740,7 @@ function ImagePicker({
 }) {
   return (
     <div>
-      <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-sand bg-[#f5f3ef] py-5 text-center transition-colors hover:border-clay">
+      <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-sand bg-cream py-5 text-center transition-colors hover:border-clay">
         <span className="text-xs text-espresso/50">Click to choose image(s)</span>
         <span className="mt-0.5 text-[10px] text-espresso/40">JPG, PNG, WebP · 8 MB max · up to 10</span>
         <input type="file" name={name} accept="image/*" multiple onChange={onChange} className="hidden" />

@@ -42,7 +42,7 @@ body {
 
 /* Shared form input style used in admin */
 .input {
-  @apply w-full rounded-lg border border-sand bg-[#f5f3ef] px-3 py-2.5 text-sm text-ink outline-none transition-colors focus:border-clay;
+  @apply w-full rounded-lg border border-sand bg-cream px-3 py-2.5 text-sm text-ink outline-none transition-colors focus:border-clay;
 }
 
 /* Hide scrollbar while keeping scroll functionality */

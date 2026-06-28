@@ -102,7 +102,7 @@ function FilterChip({
       onClick={onClick}
       className={`rounded-full px-4 py-1.5 text-sm transition-colors sm:px-5 sm:py-2 ${
         active
-          ? "bg-ink text-cream"
+          ? "bg-clay text-white"
           : "bg-white text-espresso ring-1 ring-sand hover:bg-sand/40"
       }`}
     >

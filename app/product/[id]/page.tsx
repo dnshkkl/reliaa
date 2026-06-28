@@ -69,7 +69,7 @@ export default async function ProductDetailPage({
             <div className="mt-6 flex flex-wrap gap-3 md:mt-8">
               <Link
                 href={`/contact?subject=${encodeURIComponent(product.name)}`}
-                className="rounded-full bg-ink px-6 py-2.5 text-sm text-cream transition-colors hover:bg-espresso"
+                className="rounded-full bg-clay px-6 py-2.5 text-sm text-white transition-colors hover:bg-espresso"
               >
                 Enquire about this piece
               </Link>

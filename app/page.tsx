@@ -53,7 +53,7 @@ export default async function HomePage() {
               <div className="mt-7 flex flex-wrap gap-3">
                 <Link
                   href="/collection"
-                  className="rounded-full bg-ink px-6 py-2.5 text-sm text-cream transition-colors hover:bg-espresso sm:px-7 sm:py-3"
+                  className="rounded-full bg-clay px-6 py-2.5 text-sm text-white transition-colors hover:bg-espresso sm:px-7 sm:py-3"
                 >
                   Explore the Collection
                 </Link>
@@ -169,7 +169,7 @@ export default async function HomePage() {
               <div className="mt-10 text-center md:mt-12">
                 <Link
                   href="/collection"
-                  className="rounded-full bg-ink px-7 py-3 text-sm text-cream hover:bg-espresso"
+                  className="rounded-full bg-clay px-7 py-3 text-sm text-white hover:bg-espresso"
                 >
                   See the Full Collection
                 </Link>
@@ -246,7 +246,7 @@ export default async function HomePage() {
         )}
 
         {/* Story / banner */}
-        <section className="bg-espresso py-14 text-cream md:py-20">
+        <section className="bg-ink py-14 text-cream md:py-20">
           <div className="mx-auto max-w-4xl px-5 text-center md:px-6">
             <Reveal>
               <span className="text-xs uppercase tracking-[0.3em] text-clay sm:text-sm">

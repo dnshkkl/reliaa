@@ -80,7 +80,7 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-lg bg-ink py-2.5 text-cream transition-colors hover:bg-espresso disabled:opacity-60"
+              className="w-full rounded-lg bg-clay py-2.5 text-white transition-colors hover:bg-espresso disabled:opacity-60"
             >
               {loading ? "Signing in…" : "Sign In"}
             </button>

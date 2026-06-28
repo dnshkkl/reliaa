@@ -45,7 +45,7 @@ export default function SiteHeader() {
           })}
           <Link
             href="/collection"
-            className="rounded-full bg-ink px-5 py-2 text-sm text-cream transition-colors hover:bg-espresso"
+            className="rounded-full bg-clay px-5 py-2 text-sm text-white transition-colors hover:bg-espresso"
           >
             View Collection
           </Link>
@@ -87,7 +87,7 @@ export default function SiteHeader() {
               <Link
                 href="/collection"
                 onClick={() => setOpen(false)}
-                className="block rounded-full bg-ink px-5 py-2.5 text-center text-sm text-cream hover:bg-espresso"
+                className="block rounded-full bg-clay px-5 py-2.5 text-center text-sm text-white hover:bg-espresso"
               >
                 View Collection
               </Link>

@@ -50,7 +50,7 @@ export default async function ProjectDetailPage({
         <div className="mt-10 md:mt-12">
           <Link
             href="/contact"
-            className="rounded-full bg-ink px-7 py-3 text-sm text-cream transition-colors hover:bg-espresso"
+            className="rounded-full bg-clay px-7 py-3 text-sm text-white transition-colors hover:bg-espresso"
           >
             Talk to us about your space
           </Link>

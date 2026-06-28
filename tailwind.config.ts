@@ -8,11 +8,11 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        cream: "#f7f4ef",
-        sand: "#e8e1d6",
-        clay: "#b08968",
-        espresso: "#3b322c",
-        ink: "#1c1917",
+        cream: "#FFF8F2",
+        sand: "#EDE0CC",
+        clay: "#D97329",
+        espresso: "#5C2A0A",
+        ink: "#2A1205",
       },
       fontFamily: {
         sans: ["var(--font-sans)", "system-ui", "sans-serif"],
