@@ -1,0 +1,392 @@
+import "server-only";
+import { promises as fs } from "fs";
+import path from "path";
+import { randomUUID } from "crypto";
+import type {
+  StoreData,
+  Category,
+  Product,
+  Project,
+  Message,
+} from "./types";
+import { seedData } from "./seed";
+
+// ---------------------------------------------------------------------------
+// Storage layer with two backends:
+//   * Cloudinary  — used in production (when CLOUDINARY_URL is set). Images are
+//                   stored as image assets; the small JSON document (categories,
+//                   products, projects, messages) is stored as a raw asset.
+//   * Local disk  — used automatically for local development (no setup needed).
+// ---------------------------------------------------------------------------
+
+const CLOUD_IMAGE_FOLDER = "reliaa/images";
+const CLOUD_DATA_PUBLIC_ID = "reliaa/data"; // raw JSON document
+
+const LOCAL_DATA_FILE = path.join(process.cwd(), "data", "products.json");
+const LOCAL_UPLOAD_DIR = path.join(process.cwd(), "public", "uploads");
+
+const useCloud = !!process.env.CLOUDINARY_URL;
+
+// ---------------------------------------------------------------------------
+// Cloudinary client (lazy — only loaded when CLOUDINARY_URL is configured).
+// The SDK auto-configures itself from the CLOUDINARY_URL environment variable.
+// ---------------------------------------------------------------------------
+
+async function getCloudinary() {
+  const mod = await import("cloudinary");
+  return mod.v2;
+}
+
+/** Build the public delivery URL for the raw JSON document. */
+async function cloudDataUrl(): Promise<string> {
+  const cloudinary = await getCloudinary();
+  const cloudName = cloudinary.config().cloud_name;
+  // Non-versioned URL always resolves to the latest asset; cache-busted on read.
+  return `https://res.cloudinary.com/${cloudName}/raw/upload/${CLOUD_DATA_PUBLIC_ID}`;
+}
+
+/** Derive a Cloudinary public_id from one of its delivery URLs. */
+function publicIdFromUrl(url: string): string | null {
+  const marker = "/upload/";
+  const idx = url.indexOf(marker);
+  if (idx === -1) return null;
+  let rest = url.slice(idx + marker.length);
+  rest = rest.replace(/^v\d+\//, ""); // strip version segment
+  rest = rest.replace(/\.[a-zA-Z0-9]+$/, ""); // strip file extension
+  return rest || null;
+}
+
+// ---------------------------------------------------------------------------
+// Normalisation — keeps older saved documents compatible with the schema.
+// ---------------------------------------------------------------------------
+
+type LegacyProduct = Partial<Product> & { imageUrl?: string };
+
+function normalize(raw: unknown): StoreData {
+  const data = (raw ?? {}) as {
+    categories?: Category[];
+    products?: LegacyProduct[];
+    projects?: Project[];
+    messages?: Message[];
+  };
+  return {
+    categories: data.categories ?? [],
+    products: (data.products ?? []).map((p) => ({
+      id: p.id ?? randomUUID(),
+      categoryId: p.categoryId ?? "",
+      name: p.name ?? "",
+      description: p.description ?? "",
+      // migrate single imageUrl -> images[]
+      images:
+        p.images && p.images.length
+          ? p.images
+          : p.imageUrl
+            ? [p.imageUrl]
+            : [],
+      createdAt: p.createdAt ?? new Date().toISOString(),
+    })),
+    projects: data.projects ?? [],
+    messages: data.messages ?? [],
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Data document (read / write)
+// ---------------------------------------------------------------------------
+
+async function readDataCloud(): Promise<StoreData> {
+  try {
+    const url = await cloudDataUrl();
+    const res = await fetch(`${url}?t=${Date.now()}`, { cache: "no-store" });
+    if (!res.ok) return seedData; // 404 the first time, before anything is saved
+    return normalize(await res.json());
+  } catch {
+    return seedData;
+  }
+}
+
+async function readDataLocal(): Promise<StoreData> {
+  try {
+    const raw = await fs.readFile(LOCAL_DATA_FILE, "utf8");
+    return normalize(JSON.parse(raw));
+  } catch {
+    return seedData;
+  }
+}
+
+export async function readData(): Promise<StoreData> {
+  return useCloud ? readDataCloud() : readDataLocal();
+}
+
+async function writeDataCloud(data: StoreData): Promise<void> {
+  const cloudinary = await getCloudinary();
+  const json = JSON.stringify(data, null, 2);
+  const dataUri = `data:application/json;base64,${Buffer.from(json).toString(
+    "base64"
+  )}`;
+  await cloudinary.uploader.upload(dataUri, {
+    resource_type: "raw",
+    public_id: CLOUD_DATA_PUBLIC_ID,
+    overwrite: true,
+    invalidate: true, // purge the CDN copy so the next read is fresh
+  });
+}
+
+async function writeDataLocal(data: StoreData): Promise<void> {
+  await fs.mkdir(path.dirname(LOCAL_DATA_FILE), { recursive: true });
+  await fs.writeFile(LOCAL_DATA_FILE, JSON.stringify(data, null, 2), "utf8");
+}
+
+async function writeData(data: StoreData): Promise<void> {
+  return useCloud ? writeDataCloud(data) : writeDataLocal(data);
+}
+
+// ---------------------------------------------------------------------------
+// Image upload / delete
+// ---------------------------------------------------------------------------
+
+function safeExt(filename: string): string {
+  const ext = path.extname(filename).toLowerCase();
+  return /\.(jpg|jpeg|png|webp|avif|gif)$/.test(ext) ? ext : ".jpg";
+}
+
+export async function saveImage(file: File): Promise<string> {
+  if (useCloud) {
+    const cloudinary = await getCloudinary();
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const dataUri = `data:${file.type || "image/jpeg"};base64,${buffer.toString(
+      "base64"
+    )}`;
+    const result = await cloudinary.uploader.upload(dataUri, {
+      folder: CLOUD_IMAGE_FOLDER,
+      public_id: randomUUID(),
+      resource_type: "image",
+    });
+    return result.secure_url;
+  }
+
+  const ext = safeExt(file.name);
+  const id = randomUUID();
+  await fs.mkdir(LOCAL_UPLOAD_DIR, { recursive: true });
+  const buffer = Buffer.from(await file.arrayBuffer());
+  await fs.writeFile(path.join(LOCAL_UPLOAD_DIR, `${id}${ext}`), buffer);
+  return `/uploads/${id}${ext}`;
+}
+
+export async function saveImages(files: File[]): Promise<string[]> {
+  const valid = files.filter((f) => f instanceof File && f.size > 0);
+  return Promise.all(valid.map(saveImage));
+}
+
+async function deleteImage(imageUrl: string): Promise<void> {
+  try {
+    if (imageUrl.startsWith("/uploads/")) {
+      await fs.unlink(path.join(process.cwd(), "public", imageUrl));
+    } else if (imageUrl.includes("res.cloudinary.com")) {
+      const cloudinary = await getCloudinary();
+      const publicId = publicIdFromUrl(imageUrl);
+      if (publicId) {
+        await cloudinary.uploader.destroy(publicId, {
+          resource_type: "image",
+          invalidate: true,
+        });
+      }
+    }
+  } catch {
+    // Ignore — the image may already be gone; don't block data updates.
+  }
+}
+
+async function deleteImages(urls: string[]): Promise<void> {
+  await Promise.all(urls.map(deleteImage));
+}
+
+// ---------------------------------------------------------------------------
+// Categories
+// ---------------------------------------------------------------------------
+
+function slugify(value: string): string {
+  return value
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+export async function getCategories(): Promise<Category[]> {
+  return (await readData()).categories;
+}
+
+export async function addCategory(
+  name: string,
+  description: string
+): Promise<Category> {
+  const data = await readData();
+  const base = slugify(name) || "category";
+  let slug = base;
+  let n = 1;
+  while (data.categories.some((c) => c.slug === slug)) {
+    slug = `${base}-${++n}`;
+  }
+  const category: Category = {
+    id: randomUUID(),
+    name: name.trim(),
+    slug,
+    description: description.trim(),
+  };
+  data.categories.push(category);
+  await writeData(data);
+  return category;
+}
+
+export async function updateCategory(
+  id: string,
+  name: string,
+  description: string
+): Promise<void> {
+  const data = await readData();
+  const category = data.categories.find((c) => c.id === id);
+  if (!category) return;
+  category.name = name.trim();
+  category.description = description.trim();
+  await writeData(data);
+}
+
+export async function deleteCategory(id: string): Promise<void> {
+  const data = await readData();
+  const orphaned = data.products.filter((p) => p.categoryId === id);
+  await Promise.all(orphaned.map((p) => deleteImages(p.images)));
+  data.categories = data.categories.filter((c) => c.id !== id);
+  data.products = data.products.filter((p) => p.categoryId !== id);
+  await writeData(data);
+}
+
+// ---------------------------------------------------------------------------
+// Products
+// ---------------------------------------------------------------------------
+
+export async function getProducts(): Promise<Product[]> {
+  return (await readData()).products;
+}
+
+export async function getProduct(id: string): Promise<Product | undefined> {
+  return (await readData()).products.find((p) => p.id === id);
+}
+
+export async function addProduct(input: {
+  categoryId: string;
+  name: string;
+  description: string;
+  images: string[];
+}): Promise<Product> {
+  const data = await readData();
+  const product: Product = {
+    id: randomUUID(),
+    categoryId: input.categoryId,
+    name: input.name.trim(),
+    description: input.description.trim(),
+    images: input.images,
+    createdAt: new Date().toISOString(),
+  };
+  data.products.push(product);
+  await writeData(data);
+  return product;
+}
+
+export async function deleteProduct(id: string): Promise<void> {
+  const data = await readData();
+  const product = data.products.find((p) => p.id === id);
+  if (product) await deleteImages(product.images);
+  data.products = data.products.filter((p) => p.id !== id);
+  await writeData(data);
+}
+
+// ---------------------------------------------------------------------------
+// Projects
+// ---------------------------------------------------------------------------
+
+export async function getProjects(): Promise<Project[]> {
+  return (await readData()).projects;
+}
+
+export async function getProject(id: string): Promise<Project | undefined> {
+  return (await readData()).projects.find((p) => p.id === id);
+}
+
+export async function addProject(input: {
+  title: string;
+  location: string;
+  type: string;
+  description: string;
+  images: string[];
+}): Promise<Project> {
+  const data = await readData();
+  const project: Project = {
+    id: randomUUID(),
+    title: input.title.trim(),
+    location: input.location.trim(),
+    type: input.type.trim(),
+    description: input.description.trim(),
+    images: input.images,
+    createdAt: new Date().toISOString(),
+  };
+  data.projects.push(project);
+  await writeData(data);
+  return project;
+}
+
+export async function deleteProject(id: string): Promise<void> {
+  const data = await readData();
+  const project = data.projects.find((p) => p.id === id);
+  if (project) await deleteImages(project.images);
+  data.projects = data.projects.filter((p) => p.id !== id);
+  await writeData(data);
+}
+
+// ---------------------------------------------------------------------------
+// Messages (contact enquiries)
+// ---------------------------------------------------------------------------
+
+export async function getMessages(): Promise<Message[]> {
+  return (await readData()).messages;
+}
+
+export async function addMessage(input: {
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+  subject: string;
+}): Promise<Message> {
+  const data = await readData();
+  const message: Message = {
+    id: randomUUID(),
+    name: input.name.trim(),
+    email: input.email.trim(),
+    phone: input.phone.trim(),
+    message: input.message.trim(),
+    subject: input.subject.trim(),
+    read: false,
+    createdAt: new Date().toISOString(),
+  };
+  data.messages.push(message);
+  await writeData(data);
+  return message;
+}
+
+export async function markMessageRead(
+  id: string,
+  read: boolean
+): Promise<void> {
+  const data = await readData();
+  const msg = data.messages.find((m) => m.id === id);
+  if (!msg) return;
+  msg.read = read;
+  await writeData(data);
+}
+
+export async function deleteMessage(id: string): Promise<void> {
+  const data = await readData();
+  data.messages = data.messages.filter((m) => m.id !== id);
+  await writeData(data);
+}
