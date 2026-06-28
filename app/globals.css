@@ -31,6 +31,11 @@ body {
   animation: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* Shared form input style used in admin */
+.input {
+  @apply w-full rounded-lg border border-sand bg-[#f5f3ef] px-3 py-2.5 text-sm text-ink outline-none transition-colors focus:border-clay;
+}
+
 /* Hide scrollbar while keeping scroll functionality */
 .scrollbar-none {
   -ms-overflow-style: none;
