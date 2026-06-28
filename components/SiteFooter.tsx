@@ -6,7 +6,7 @@ export default function SiteFooter() {
       <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 md:gap-10 md:px-6 md:py-16 lg:grid-cols-3">
         <div className="sm:col-span-2 lg:col-span-1">
           <div className="flex items-baseline gap-1">
-            <span className="font-serif text-2xl font-semibold">Reliaa</span>
+            <span className="font-script text-3xl">Reliaa</span>
             <span className="h-1.5 w-1.5 rounded-full bg-clay" />
           </div>
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-cream/70">

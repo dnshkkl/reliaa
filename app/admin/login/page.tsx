@@ -39,7 +39,7 @@ export default function AdminLoginPage() {
     <main className="flex min-h-screen items-center justify-center bg-cream px-6">
       <div className="w-full max-w-sm">
         <Link href="/" className="mb-8 flex items-baseline justify-center gap-1">
-          <span className="font-serif text-3xl font-semibold text-ink">
+          <span className="font-script text-4xl text-ink">
             Reliaa
           </span>
           <span className="h-1.5 w-1.5 rounded-full bg-clay" />

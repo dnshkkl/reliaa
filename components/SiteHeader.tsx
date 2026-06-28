@@ -19,7 +19,7 @@ export default function SiteHeader() {
     <header className="sticky top-0 z-50 border-b border-sand/70 bg-cream/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3 md:px-6 md:py-4">
         <Link href="/" className="group flex items-baseline gap-1">
-          <span className="font-serif text-xl font-semibold tracking-tight text-ink sm:text-2xl">
+          <span className="font-script text-2xl text-ink sm:text-3xl">
             Reliaa
           </span>
           <span className="h-1.5 w-1.5 rounded-full bg-clay transition-transform group-hover:scale-125" />

@@ -41,7 +41,7 @@ export default function AdminDashboard({
       <header className="border-b border-sand/70 bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3 md:px-6 md:py-4">
           <div className="flex items-baseline gap-2">
-            <span className="font-serif text-lg font-semibold text-ink sm:text-xl">
+            <span className="font-script text-2xl text-ink">
               Reliaa
             </span>
             <span className="text-sm text-espresso/60">Admin</span>
