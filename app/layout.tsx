@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Playfair_Display, Kalam } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
 const inter = Inter({
@@ -14,12 +14,6 @@ const playfair = Playfair_Display({
   display: "swap",
 });
 
-const kalam = Kalam({
-  subsets: ["latin"],
-  variable: "--font-script",
-  weight: ["700"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "Reliaa — Contemporary Furniture",
@@ -31,7 +25,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${playfair.variable} ${kalam.variable}`}>
+    <html lang="en" className={`${inter.variable} ${playfair.variable}`}>
       <body>{children}</body>
     </html>
   );
