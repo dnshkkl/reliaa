@@ -236,6 +236,7 @@ function ProductsSection({
         {/* Left: Add / Edit form */}
         <div className="flex-shrink-0 overflow-y-auto border-b border-sand/60 bg-white p-5 lg:w-72 lg:border-b-0 lg:border-r xl:w-80 lg:p-6">
           <ProductForm
+            key={editing?.id ?? "new"}
             categories={categories}
             editing={editing}
             onDone={() => { setEditing(null); onChange(); }}
@@ -515,6 +516,7 @@ function ProjectsSection({
       <div className="flex flex-1 flex-col overflow-hidden lg:flex-row">
         <div className="flex-shrink-0 overflow-y-auto border-b border-sand/60 bg-white p-5 lg:w-72 lg:border-b-0 lg:border-r xl:w-80 lg:p-6">
           <ProjectForm
+            key={editing?.id ?? "new"}
             editing={editing}
             onDone={() => { setEditing(null); onChange(); }}
             onCancel={() => setEditing(null)}
