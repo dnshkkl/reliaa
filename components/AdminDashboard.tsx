@@ -302,36 +302,68 @@ function ProductForm({
   onCancel: () => void;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
-  const [previews, setPreviews] = useState<string[]>([]);
+  const isEdit = !!editing;
+
+  // Existing images the user is keeping (can remove individually)
+  const [keepImages, setKeepImages] = useState<string[]>(editing?.images ?? []);
+  // New files chosen for upload
+  const [newFiles, setNewFiles] = useState<File[]>([]);
+  const [newPreviews, setNewPreviews] = useState<string[]>([]);
+
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Reset previews when switching between add/edit
-  const isEdit = !!editing;
-
   function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setPreviews(Array.from(e.target.files ?? []).map((f) => URL.createObjectURL(f)));
+    const files = Array.from(e.target.files ?? []);
+    setNewFiles((prev) => [...prev, ...files]);
+    setNewPreviews((prev) => [...prev, ...files.map((f) => URL.createObjectURL(f))]);
+    // Reset input so the same file can be re-selected if needed
+    e.target.value = "";
+  }
+
+  function removeExisting(url: string) {
+    setKeepImages((prev) => prev.filter((u) => u !== url));
+  }
+
+  function removeNew(index: number) {
+    setNewFiles((prev) => prev.filter((_, i) => i !== index));
+    setNewPreviews((prev) => prev.filter((_, i) => i !== index));
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(""); setSuccess(""); setBusy(true);
     try {
+      const fd = new FormData(e.currentTarget);
+      // Remove the default 'images' entries — we manage them manually
+      // (form fields other than images are still included via FormData)
+
+      if (isEdit) {
+        // Send kept image URLs
+        keepImages.forEach((url) => fd.append("keepImages", url));
+      }
+      // Send new files
+      newFiles.forEach((file) => fd.append("images", file));
+
+      const totalImages = keepImages.length + newFiles.length;
+      if (totalImages === 0) {
+        setError("At least one image is required.");
+        setBusy(false);
+        return;
+      }
+
       const url = isEdit ? `/api/products/${editing!.id}` : "/api/products";
       const method = isEdit ? "PATCH" : "POST";
-      const res = await fetch(url, { method, body: new FormData(e.currentTarget) });
+      const res = await fetch(url, { method, body: fd });
       if (!res.ok) {
         setError((await res.json().catch(() => ({}))).error || "Could not save.");
         return;
       }
       formRef.current?.reset();
-      setPreviews([]);
-      if (isEdit) {
-        setSuccess("Changes saved.");
-      } else {
-        setSuccess("Product added.");
-      }
+      setNewFiles([]);
+      setNewPreviews([]);
+      setSuccess(isEdit ? "Changes saved." : "Product added.");
       onDone();
     } catch { setError("Something went wrong."); }
     finally { setBusy(false); }
@@ -341,7 +373,7 @@ function ProductForm({
     return (
       <div>
         <SectionLabel>Add product</SectionLabel>
-        <p className="text-sm text-espresso/60">Add a category first before adding products.</p>
+        <p className="mt-2 text-sm text-espresso/60">Add a category first before adding products.</p>
       </div>
     );
   }
@@ -357,20 +389,10 @@ function ProductForm({
         )}
       </div>
 
-      {isEdit && (
-        <div className="mb-4 flex gap-2 overflow-x-auto">
-          {editing!.images.map((src, i) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img key={i} src={src} alt="" className="h-14 w-16 flex-shrink-0 rounded-lg object-cover ring-1 ring-sand" />
-          ))}
-        </div>
-      )}
-
       <form ref={formRef} onSubmit={handleSubmit} className="space-y-3.5">
         <Field label="Category">
           <select name="categoryId" required defaultValue={editing?.categoryId ?? ""}
-            key={editing?.id ?? "new"}
-            className="input">
+            key={editing?.id ?? "new"} className="input">
             {!editing && <option value="" disabled>Choose…</option>}
             {categories.map((c) => (
               <option key={c.id} value={c.id}>{c.name}</option>
@@ -388,10 +410,61 @@ function ProductForm({
             placeholder="Materials, dimensions, finish…"
             className="input resize-none" />
         </Field>
-        <Field label={isEdit ? "Replace images (optional)" : "Images"}>
-          <ImagePicker name="images" previews={previews} onChange={onFileChange}
-            hint={isEdit ? "Upload new images to replace existing ones" : undefined} />
+
+        {/* Image management */}
+        <Field label="Images">
+          <div className="space-y-2">
+            {/* Existing images with remove buttons */}
+            {keepImages.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {keepImages.map((src) => (
+                  <div key={src} className="relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={src} alt="" className="h-16 w-20 rounded-lg object-cover ring-1 ring-sand" />
+                    <button
+                      type="button"
+                      onClick={() => removeExisting(src)}
+                      className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white shadow"
+                      title="Remove"
+                    >
+                      <span className="text-[10px] leading-none">✕</span>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* New image previews with remove buttons */}
+            {newPreviews.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {newPreviews.map((src, i) => (
+                  <div key={src} className="relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={src} alt="" className="h-16 w-20 rounded-lg object-cover ring-1 ring-clay/60" />
+                    <button
+                      type="button"
+                      onClick={() => removeNew(i)}
+                      className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white shadow"
+                      title="Remove"
+                    >
+                      <span className="text-[10px] leading-none">✕</span>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Upload zone */}
+            <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-sand bg-[#f5f1ec] py-4 text-center transition-colors hover:border-clay">
+              <span className="text-xs text-espresso/50">
+                {keepImages.length + newPreviews.length > 0 ? "Add more images" : "Click to choose image(s)"}
+              </span>
+              <span className="mt-0.5 text-[10px] text-espresso/40">JPG, PNG, WebP · 8 MB max · up to 10</span>
+              <input type="file" accept="image/*" multiple onChange={onFileChange} className="hidden" />
+            </label>
+          </div>
         </Field>
+
         {error   && <p className="text-xs text-red-600">{error}</p>}
         {success && <p className="text-xs text-green-700">{success}</p>}
         <div className="flex gap-2">
@@ -506,29 +579,55 @@ function ProjectForm({
   onCancel: () => void;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
-  const [previews, setPreviews] = useState<string[]>([]);
+  const isEdit = !!editing;
+
+  const [keepImages, setKeepImages] = useState<string[]>(editing?.images ?? []);
+  const [newFiles, setNewFiles] = useState<File[]>([]);
+  const [newPreviews, setNewPreviews] = useState<string[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const isEdit = !!editing;
 
   function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setPreviews(Array.from(e.target.files ?? []).map((f) => URL.createObjectURL(f)));
+    const files = Array.from(e.target.files ?? []);
+    setNewFiles((prev) => [...prev, ...files]);
+    setNewPreviews((prev) => [...prev, ...files.map((f) => URL.createObjectURL(f))]);
+    e.target.value = "";
+  }
+
+  function removeExisting(url: string) {
+    setKeepImages((prev) => prev.filter((u) => u !== url));
+  }
+
+  function removeNew(index: number) {
+    setNewFiles((prev) => prev.filter((_, i) => i !== index));
+    setNewPreviews((prev) => prev.filter((_, i) => i !== index));
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(""); setSuccess(""); setBusy(true);
     try {
+      const fd = new FormData(e.currentTarget);
+      if (isEdit) keepImages.forEach((url) => fd.append("keepImages", url));
+      newFiles.forEach((file) => fd.append("images", file));
+
+      if (keepImages.length + newFiles.length === 0) {
+        setError("At least one image is required.");
+        setBusy(false);
+        return;
+      }
+
       const url = isEdit ? `/api/projects/${editing!.id}` : "/api/projects";
       const method = isEdit ? "PATCH" : "POST";
-      const res = await fetch(url, { method, body: new FormData(e.currentTarget) });
+      const res = await fetch(url, { method, body: fd });
       if (!res.ok) {
         setError((await res.json().catch(() => ({}))).error || "Could not save.");
         return;
       }
       formRef.current?.reset();
-      setPreviews([]);
+      setNewFiles([]);
+      setNewPreviews([]);
       setSuccess(isEdit ? "Changes saved." : "Project published.");
       onDone();
     } catch { setError("Something went wrong."); }
@@ -545,15 +644,6 @@ function ProjectForm({
           </button>
         )}
       </div>
-
-      {isEdit && (
-        <div className="mb-4 flex gap-2 overflow-x-auto">
-          {editing!.images.map((src, i) => (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img key={i} src={src} alt="" className="h-14 w-20 flex-shrink-0 rounded-lg object-cover ring-1 ring-sand" />
-          ))}
-        </div>
-      )}
 
       <form ref={formRef} onSubmit={handleSubmit} className="space-y-3.5">
         <Field label="Title">
@@ -579,10 +669,47 @@ function ProjectForm({
             placeholder="A note about the space and pieces used."
             className="input resize-none" />
         </Field>
-        <Field label={isEdit ? "Replace images (optional)" : "Images"}>
-          <ImagePicker name="images" previews={previews} onChange={onFileChange}
-            hint={isEdit ? "Upload new images to replace existing ones" : undefined} />
+
+        <Field label="Images">
+          <div className="space-y-2">
+            {keepImages.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {keepImages.map((src) => (
+                  <div key={src} className="relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={src} alt="" className="h-16 w-24 rounded-lg object-cover ring-1 ring-sand" />
+                    <button type="button" onClick={() => removeExisting(src)}
+                      className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white shadow">
+                      <span className="text-[10px] leading-none">✕</span>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {newPreviews.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {newPreviews.map((src, i) => (
+                  <div key={src} className="relative">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={src} alt="" className="h-16 w-24 rounded-lg object-cover ring-1 ring-clay/60" />
+                    <button type="button" onClick={() => removeNew(i)}
+                      className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white shadow">
+                      <span className="text-[10px] leading-none">✕</span>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-sand bg-[#f5f1ec] py-4 text-center transition-colors hover:border-clay">
+              <span className="text-xs text-espresso/50">
+                {keepImages.length + newPreviews.length > 0 ? "Add more images" : "Click to choose image(s)"}
+              </span>
+              <span className="mt-0.5 text-[10px] text-espresso/40">JPG, PNG, WebP · 8 MB max · up to 10</span>
+              <input type="file" accept="image/*" multiple onChange={onFileChange} className="hidden" />
+            </label>
+          </div>
         </Field>
+
         {error   && <p className="text-xs text-red-600">{error}</p>}
         {success && <p className="text-xs text-green-700">{success}</p>}
         <div className="flex gap-2">

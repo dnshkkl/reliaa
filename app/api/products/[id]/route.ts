@@ -1,6 +1,12 @@
 import { NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/guard";
-import { deleteProduct, getCategories, saveImages, updateProduct } from "@/lib/store";
+import {
+  deleteProduct,
+  getCategories,
+  getProduct,
+  saveImages,
+  updateProduct,
+} from "@/lib/store";
 import { validateImages } from "@/lib/validate";
 
 export async function PATCH(
@@ -23,7 +29,14 @@ export async function PATCH(
   const categoryId = String(form.get("categoryId") ?? "").trim();
   const name = String(form.get("name") ?? "").trim();
   const description = String(form.get("description") ?? "").trim();
-  const files = form.getAll("images").filter((f): f is File => f instanceof File && f.size > 0);
+
+  // Existing image URLs the user chose to keep
+  const keepImages = form.getAll("keepImages").map(String).filter(Boolean);
+
+  // New files to upload
+  const newFiles = form
+    .getAll("images")
+    .filter((f): f is File => f instanceof File && f.size > 0);
 
   if (!name) {
     return NextResponse.json({ error: "Product name is required." }, { status: 400 });
@@ -34,14 +47,56 @@ export async function PATCH(
     return NextResponse.json({ error: "Please choose a valid category." }, { status: 400 });
   }
 
-  let newImages: string[] | undefined;
-  if (files.length > 0) {
-    const err = validateImages(files);
+  if (newFiles.length > 0) {
+    const err = validateImages(newFiles);
     if (err) return NextResponse.json({ error: err }, { status: 400 });
-    newImages = await saveImages(files);
   }
 
-  await updateProduct(id, { categoryId, name, description, newImages });
+  const finalImageCount = keepImages.length + newFiles.length;
+  if (finalImageCount === 0) {
+    return NextResponse.json(
+      { error: "At least one image is required." },
+      { status: 400 }
+    );
+  }
+
+  // Upload new files and build final image list
+  const uploadedUrls = newFiles.length > 0 ? await saveImages(newFiles) : [];
+  const finalImages = [...keepImages, ...uploadedUrls];
+
+  // Delete images that were removed (in current product but not in keepImages)
+  const { promises: fs } = await import("fs");
+  const path = await import("path");
+  const current = await getProduct(id);
+  if (current) {
+    const removed = current.images.filter((url) => !keepImages.includes(url));
+    // Delete removed images from storage (best-effort)
+    await Promise.all(
+      removed.map(async (url) => {
+        try {
+          if (url.startsWith("/uploads/")) {
+            await fs.unlink(path.join(process.cwd(), "public", url));
+          } else if (url.includes("res.cloudinary.com")) {
+            const { v2: cloudinary } = await import("cloudinary");
+            const marker = "/upload/";
+            const idx = url.indexOf(marker);
+            if (idx !== -1) {
+              let rest = url.slice(idx + marker.length);
+              rest = rest.replace(/^v\d+\//, "").replace(/\.[a-zA-Z0-9]+$/, "");
+              await cloudinary.uploader.destroy(rest, {
+                resource_type: "image",
+                invalidate: true,
+              });
+            }
+          }
+        } catch {
+          // ignore
+        }
+      })
+    );
+  }
+
+  await updateProduct(id, { categoryId, name, description, images: finalImages });
   return NextResponse.json({ ok: true });
 }
 

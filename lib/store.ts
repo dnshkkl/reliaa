@@ -299,19 +299,16 @@ export async function updateProduct(
     categoryId: string;
     name: string;
     description: string;
-    newImages?: string[]; // if provided, replaces existing images
+    images: string[]; // final set (kept existing + newly uploaded)
   }
 ): Promise<void> {
   const data = await readData();
   const product = data.products.find((p) => p.id === id);
   if (!product) return;
-  if (input.newImages && input.newImages.length > 0) {
-    await deleteImages(product.images);
-    product.images = input.newImages;
-  }
   product.categoryId = input.categoryId;
   product.name = input.name.trim();
   product.description = input.description.trim();
+  product.images = input.images;
   await writeData(data);
 }
 
@@ -364,20 +361,17 @@ export async function updateProject(
     location: string;
     type: string;
     description: string;
-    newImages?: string[];
+    images: string[]; // final set (kept existing + newly uploaded)
   }
 ): Promise<void> {
   const data = await readData();
   const project = data.projects.find((p) => p.id === id);
   if (!project) return;
-  if (input.newImages && input.newImages.length > 0) {
-    await deleteImages(project.images);
-    project.images = input.newImages;
-  }
   project.title = input.title.trim();
   project.location = input.location.trim();
   project.type = input.type.trim();
   project.description = input.description.trim();
+  project.images = input.images;
   await writeData(data);
 }
 
