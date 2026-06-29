@@ -254,10 +254,33 @@ export async function updateCategory(
 
 export async function deleteCategory(id: string): Promise<void> {
   const data = await readData();
+  const cat = data.categories.find((c) => c.id === id);
+  if (cat?.imageUrl) await deleteImage(cat.imageUrl);
   const orphaned = data.products.filter((p) => p.categoryId === id);
   await Promise.all(orphaned.map((p) => deleteImages(p.images)));
   data.categories = data.categories.filter((c) => c.id !== id);
   data.products = data.products.filter((p) => p.categoryId !== id);
+  await writeData(data);
+}
+
+export async function setCategoryImage(
+  id: string,
+  imageUrl: string
+): Promise<void> {
+  const data = await readData();
+  const category = data.categories.find((c) => c.id === id);
+  if (!category) return;
+  if (category.imageUrl) await deleteImage(category.imageUrl);
+  category.imageUrl = imageUrl;
+  await writeData(data);
+}
+
+export async function removeCategoryImage(id: string): Promise<void> {
+  const data = await readData();
+  const category = data.categories.find((c) => c.id === id);
+  if (!category) return;
+  if (category.imageUrl) await deleteImage(category.imageUrl);
+  delete category.imageUrl;
   await writeData(data);
 }
 

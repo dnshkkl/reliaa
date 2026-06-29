@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Category, Message, Product, Project } from "@/lib/types";
 
-type Section = "products" | "projects" | "categories" | "inbox";
+type Section = "products" | "projects" | "categories" | "banners" | "inbox";
 
 // ─── Icons ───────────────────────────────────────────────────────────────────
 
@@ -60,6 +60,16 @@ function IcLogout() {
     </svg>
   );
 }
+function IcBanner() {
+  return (
+    <svg className="h-[18px] w-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
+        d="M4 5h16a1 1 0 011 1v12a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1z" />
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
+        d="M3 15l5-5 4 4 3-3 5 4" />
+    </svg>
+  );
+}
 function IcMenu() {
   return (
     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -100,10 +110,11 @@ export default function AdminDashboard({
     count?: number;
     badge?: number;
   }[] = [
-    { id: "products",   label: "Products",   icon: <IcBox />,   count: products.length   },
-    { id: "projects",   label: "Projects",   icon: <IcPhoto />, count: projects.length   },
-    { id: "categories", label: "Categories", icon: <IcTag />,   count: categories.length },
-    { id: "inbox",      label: "Inbox",      icon: <IcMail />,  badge: unread            },
+    { id: "products",   label: "Products",         icon: <IcBox />,    count: products.length   },
+    { id: "projects",   label: "Projects",         icon: <IcPhoto />,  count: projects.length   },
+    { id: "categories", label: "Categories",       icon: <IcTag />,    count: categories.length },
+    { id: "banners",    label: "Category Banners", icon: <IcBanner />, count: categories.filter(c => c.imageUrl).length },
+    { id: "inbox",      label: "Inbox",            icon: <IcMail />,   badge: unread            },
   ];
 
   function NavBtn({ item }: { item: (typeof navItems)[0] }) {
@@ -190,6 +201,9 @@ export default function AdminDashboard({
           )}
           {section === "categories" && (
             <CategoriesSection categories={categories} products={products} onChange={refresh} />
+          )}
+          {section === "banners" && (
+            <BannersSection categories={categories} onChange={refresh} />
           )}
           {section === "inbox" && (
             <InboxSection messages={messages} onChange={refresh} />
@@ -904,6 +918,141 @@ function CategoriesSection({
             </div>
           )}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Category Banners section ────────────────────────────────────────────────
+
+function BannersSection({
+  categories,
+  onChange,
+}: {
+  categories: Category[];
+  onChange: () => void;
+}) {
+  const withImage = categories.filter((c) => c.imageUrl).length;
+
+  return (
+    <div className="flex h-full flex-col overflow-hidden">
+      <div className="flex-shrink-0 border-b border-sand/60 bg-white px-6 py-4">
+        <h1 className="font-serif text-xl text-ink">Category Banners</h1>
+        <p className="mt-0.5 text-xs text-espresso/50">
+          Upload a background image for each category card shown on the homepage.
+          Text is overlaid automatically. {withImage}/{categories.length} set.
+        </p>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-5 lg:p-6">
+        {categories.length === 0 ? (
+          <EmptyState label="No categories yet — add some in the Categories tab first." />
+        ) : (
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3">
+            {categories.map((cat) => (
+              <BannerCard key={cat.id} category={cat} onChange={onChange} />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function BannerCard({
+  category,
+  onChange,
+}: {
+  category: Category;
+  onChange: () => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [removing, setRemoving] = useState(false);
+
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("image", file);
+      const res = await fetch(`/api/categories/${category.id}/image`, {
+        method: "POST",
+        body: fd,
+      });
+      if (res.ok) onChange();
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  }
+
+  async function handleRemove() {
+    if (!confirm(`Remove banner image for "${category.name}"?`)) return;
+    setRemoving(true);
+    try {
+      await fetch(`/api/categories/${category.id}/image`, { method: "DELETE" });
+      onChange();
+    } finally {
+      setRemoving(false);
+    }
+  }
+
+  return (
+    <div className="overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-sand/60">
+      {/* Preview */}
+      <div className="relative aspect-[16/9] bg-sand">
+        {category.imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={category.imageUrl}
+            alt={category.name}
+            className="h-full w-full object-cover"
+          />
+        ) : (
+          <div className="flex h-full flex-col items-center justify-center gap-1">
+            <span className="text-2xl opacity-20">🖼</span>
+            <span className="text-xs text-espresso/40">No banner set</span>
+          </div>
+        )}
+
+        {/* Text overlay preview */}
+        <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/65 via-black/10 to-transparent p-4">
+          <p className="font-serif text-lg font-semibold text-white drop-shadow">
+            {category.name}
+          </p>
+          {category.description && (
+            <p className="mt-0.5 line-clamp-1 text-xs text-white/70">
+              {category.description}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex gap-2 p-3">
+        <label className={`flex flex-1 cursor-pointer items-center justify-center rounded-lg py-2 text-xs font-medium text-white transition-colors ${
+          uploading ? "bg-clay/60" : "bg-clay hover:bg-espresso"
+        }`}>
+          {uploading ? "Uploading…" : category.imageUrl ? "Change image" : "Upload image"}
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleUpload}
+            disabled={uploading}
+            className="hidden"
+          />
+        </label>
+
+        {category.imageUrl && (
+          <button
+            onClick={handleRemove}
+            disabled={removing}
+            className="rounded-lg border border-sand px-3 py-2 text-xs text-red-500 transition-colors hover:bg-red-50 disabled:opacity-50"
+          >
+            {removing ? "…" : "Remove"}
+          </button>
+        )}
       </div>
     </div>
   );

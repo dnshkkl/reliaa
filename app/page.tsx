@@ -99,26 +99,62 @@ export default async function HomePage() {
             <div className="mt-8 grid gap-4 sm:grid-cols-2 md:mt-12 md:gap-6 lg:grid-cols-3">
               {categories.map((cat, i) => (
                 <Reveal key={cat.id} delay={i * 90}>
-                  <Link
-                    href={`/collection?category=${cat.slug}`}
-                    className="group block h-full rounded-2xl border border-sand/70 bg-cream p-5 transition-all hover:-translate-y-1 hover:border-clay hover:shadow-lg sm:p-6 md:p-8"
-                  >
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-serif text-xl text-ink sm:text-2xl">
-                        {cat.name}
-                      </h3>
-                      <span className="text-sm text-espresso/50">
-                        {countFor(cat.id)}{" "}
-                        {countFor(cat.id) === 1 ? "piece" : "pieces"}
+                  {cat.imageUrl ? (
+                    /* With background image — overlay layout */
+                    <Link
+                      href={`/collection?category=${cat.slug}`}
+                      className="group relative block h-full min-h-[180px] overflow-hidden rounded-2xl shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={cat.imageUrl}
+                        alt={cat.name}
+                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                      <div className="relative flex h-full flex-col justify-end p-5 sm:p-6 md:p-8">
+                        <div className="flex items-end justify-between">
+                          <h3 className="font-serif text-xl text-white sm:text-2xl">
+                            {cat.name}
+                          </h3>
+                          <span className="text-sm text-white/60">
+                            {countFor(cat.id)}{" "}
+                            {countFor(cat.id) === 1 ? "piece" : "pieces"}
+                          </span>
+                        </div>
+                        {cat.description && (
+                          <p className="mt-2 text-sm leading-relaxed text-white/75">
+                            {cat.description}
+                          </p>
+                        )}
+                        <span className="mt-4 inline-block text-sm text-white opacity-0 transition-opacity group-hover:opacity-100">
+                          Explore {cat.name} →
+                        </span>
+                      </div>
+                    </Link>
+                  ) : (
+                    /* No image — plain card */
+                    <Link
+                      href={`/collection?category=${cat.slug}`}
+                      className="group block h-full rounded-2xl border border-sand/70 bg-cream p-5 transition-all hover:-translate-y-1 hover:border-clay hover:shadow-lg sm:p-6 md:p-8"
+                    >
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-serif text-xl text-ink sm:text-2xl">
+                          {cat.name}
+                        </h3>
+                        <span className="text-sm text-espresso/50">
+                          {countFor(cat.id)}{" "}
+                          {countFor(cat.id) === 1 ? "piece" : "pieces"}
+                        </span>
+                      </div>
+                      <p className="mt-2 text-sm leading-relaxed text-espresso/70 md:mt-3">
+                        {cat.description}
+                      </p>
+                      <span className="mt-4 inline-block text-sm text-clay opacity-0 transition-opacity group-hover:opacity-100 md:mt-6">
+                        Explore {cat.name} →
                       </span>
-                    </div>
-                    <p className="mt-2 text-sm leading-relaxed text-espresso/70 md:mt-3">
-                      {cat.description}
-                    </p>
-                    <span className="mt-4 inline-block text-sm text-clay opacity-0 transition-opacity group-hover:opacity-100 md:mt-6">
-                      Explore {cat.name} →
-                    </span>
-                  </Link>
+                    </Link>
+                  )}
                 </Reveal>
               ))}
             </div>

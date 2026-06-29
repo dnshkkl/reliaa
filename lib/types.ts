@@ -3,6 +3,7 @@ export interface Category {
   name: string;
   slug: string;
   description: string;
+  imageUrl?: string; // optional background image for category cards
 }
 
 export interface Product {
