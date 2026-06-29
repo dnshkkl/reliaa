@@ -1,6 +1,45 @@
 import { NextResponse } from "next/server";
 import { isAuthenticated } from "@/lib/guard";
-import { deleteProject } from "@/lib/store";
+import { deleteProject, saveImages, updateProject } from "@/lib/store";
+import { validateImages } from "@/lib/validate";
+
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  if (!(await isAuthenticated())) {
+    return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
+  }
+
+  const { id } = await params;
+
+  let form: FormData;
+  try {
+    form = await request.formData();
+  } catch {
+    return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+  }
+
+  const title = String(form.get("title") ?? "").trim();
+  const location = String(form.get("location") ?? "").trim();
+  const type = String(form.get("type") ?? "").trim();
+  const description = String(form.get("description") ?? "").trim();
+  const files = form.getAll("images").filter((f): f is File => f instanceof File && f.size > 0);
+
+  if (!title) {
+    return NextResponse.json({ error: "Project title is required." }, { status: 400 });
+  }
+
+  let newImages: string[] | undefined;
+  if (files.length > 0) {
+    const err = validateImages(files);
+    if (err) return NextResponse.json({ error: err }, { status: 400 });
+    newImages = await saveImages(files);
+  }
+
+  await updateProject(id, { title, location, type, description, newImages });
+  return NextResponse.json({ ok: true });
+}
 
 export async function DELETE(
   _request: Request,
@@ -9,7 +48,6 @@ export async function DELETE(
   if (!(await isAuthenticated())) {
     return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
   }
-
   const { id } = await params;
   await deleteProject(id);
   return NextResponse.json({ ok: true });

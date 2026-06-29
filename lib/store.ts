@@ -293,6 +293,28 @@ export async function addProduct(input: {
   return product;
 }
 
+export async function updateProduct(
+  id: string,
+  input: {
+    categoryId: string;
+    name: string;
+    description: string;
+    newImages?: string[]; // if provided, replaces existing images
+  }
+): Promise<void> {
+  const data = await readData();
+  const product = data.products.find((p) => p.id === id);
+  if (!product) return;
+  if (input.newImages && input.newImages.length > 0) {
+    await deleteImages(product.images);
+    product.images = input.newImages;
+  }
+  product.categoryId = input.categoryId;
+  product.name = input.name.trim();
+  product.description = input.description.trim();
+  await writeData(data);
+}
+
 export async function deleteProduct(id: string): Promise<void> {
   const data = await readData();
   const product = data.products.find((p) => p.id === id);
@@ -333,6 +355,30 @@ export async function addProject(input: {
   data.projects.push(project);
   await writeData(data);
   return project;
+}
+
+export async function updateProject(
+  id: string,
+  input: {
+    title: string;
+    location: string;
+    type: string;
+    description: string;
+    newImages?: string[];
+  }
+): Promise<void> {
+  const data = await readData();
+  const project = data.projects.find((p) => p.id === id);
+  if (!project) return;
+  if (input.newImages && input.newImages.length > 0) {
+    await deleteImages(project.images);
+    project.images = input.newImages;
+  }
+  project.title = input.title.trim();
+  project.location = input.location.trim();
+  project.type = input.type.trim();
+  project.description = input.description.trim();
+  await writeData(data);
 }
 
 export async function deleteProject(id: string): Promise<void> {
