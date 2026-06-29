@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
@@ -17,12 +18,17 @@ export default function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-sand/70 bg-cream/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3 md:px-6 md:py-4">
-        <Link href="/" className="group flex items-baseline gap-1">
-          <span className="font-script text-2xl text-ink sm:text-3xl">
-            Reliaa
-          </span>
-          <span className="h-1.5 w-1.5 rounded-full bg-clay transition-transform group-hover:scale-125" />
+      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-2 md:px-6 md:py-2">
+        {/* Logo */}
+        <Link href="/" className="flex items-center">
+          <Image
+            src="/logo.png"
+            alt="Reliaa"
+            width={56}
+            height={72}
+            className="h-14 w-auto object-contain"
+            priority
+          />
         </Link>
 
         {/* Desktop nav */}

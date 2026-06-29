@@ -1,14 +1,18 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function SiteFooter() {
   return (
     <footer id="contact" className="border-t border-sand/70 bg-espresso text-cream">
       <div className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-2 md:gap-10 md:px-6 md:py-16 lg:grid-cols-3">
         <div className="sm:col-span-2 lg:col-span-1">
-          <div className="flex items-baseline gap-1">
-            <span className="font-script text-3xl">Reliaa</span>
-            <span className="h-1.5 w-1.5 rounded-full bg-clay" />
-          </div>
+          <Image
+            src="/logo.png"
+            alt="Reliaa"
+            width={100}
+            height={130}
+            className="h-24 w-auto object-contain brightness-0 invert"
+          />
           <p className="mt-4 max-w-xs text-sm leading-relaxed text-cream/70">
             Contemporary furniture, thoughtfully curated. Visit our showroom to
             experience the collection in person.

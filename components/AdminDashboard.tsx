@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import type { Category, Message, Product, Project } from "@/lib/types";
 
 type Section = "products" | "projects" | "categories" | "inbox";
@@ -135,9 +136,9 @@ export default function AdminDashboard({
   const sidebarContent = (
     <div className="flex h-full flex-col">
       {/* Logo */}
-      <div className="flex-shrink-0 border-b border-sand/70 px-5 py-5">
-        <span className="font-script text-2xl text-ink">Reliaa</span>
-        <p className="mt-0.5 text-[10px] uppercase tracking-[0.2em] text-espresso/40">
+      <div className="flex-shrink-0 border-b border-sand/70 px-5 py-4">
+        <Image src="/logo.png" alt="Reliaa" width={72} height={93} className="h-16 w-auto object-contain" />
+        <p className="mt-1 text-[10px] uppercase tracking-[0.2em] text-espresso/40">
           Admin Panel
         </p>
       </div>
@@ -200,7 +201,7 @@ export default function AdminDashboard({
           >
             <IcMenu />
           </button>
-          <span className="font-script text-2xl text-ink">Reliaa</span>
+          <Image src="/logo.png" alt="Reliaa" width={44} height={57} className="h-10 w-auto object-contain" />
           <Link
             href="/"
             target="_blank"

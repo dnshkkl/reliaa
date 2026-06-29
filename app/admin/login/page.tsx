@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -38,11 +39,8 @@ export default function AdminLoginPage() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-cream px-6">
       <div className="w-full max-w-sm">
-        <Link href="/" className="mb-8 flex items-baseline justify-center gap-1">
-          <span className="font-script text-4xl text-ink">
-            Reliaa
-          </span>
-          <span className="h-1.5 w-1.5 rounded-full bg-clay" />
+        <Link href="/" className="mb-8 flex justify-center">
+          <Image src="/logo.png" alt="Reliaa" width={120} height={156} className="h-28 w-auto object-contain" />
         </Link>
 
         <div className="rounded-2xl bg-white p-8 shadow-sm ring-1 ring-sand/60">
