@@ -637,8 +637,8 @@ function CategoriesSection({
 
   function startEdit(c: Category) {
     setEditingId(c.id);
-    setEditName(c.name);
-    setEditDesc(c.description);
+    setEditName(c.name ?? "");
+    setEditDesc(c.description ?? "");
   }
 
   async function saveEdit(id: string) {
@@ -681,8 +681,9 @@ function CategoriesSection({
                 required placeholder="e.g. Tables" className="input" />
             </Field>
             <Field label="Description">
-              <input value={description} onChange={(e) => setDescription(e.target.value)}
-                placeholder="Short description shown on homepage." className="input" />
+              <textarea value={description} onChange={(e) => setDescription(e.target.value)}
+                rows={3} placeholder="Short description shown on homepage."
+                className="input resize-none" />
             </Field>
             {error && <p className="text-xs text-red-600">{error}</p>}
             <button type="submit" disabled={busy}
@@ -712,18 +713,25 @@ function CategoriesSection({
                     }`}>
                     {isEditing ? (
                       <div className="space-y-2">
-                        <input
-                          value={editName}
-                          onChange={(e) => setEditName(e.target.value)}
-                          className="input text-sm"
-                          placeholder="Category name"
-                        />
-                        <input
-                          value={editDesc}
-                          onChange={(e) => setEditDesc(e.target.value)}
-                          className="input text-sm"
-                          placeholder="Description"
-                        />
+                        <div>
+                          <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-espresso/50">Name</label>
+                          <input
+                            value={editName}
+                            onChange={(e) => setEditName(e.target.value)}
+                            className="input text-sm"
+                            placeholder="Category name"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-espresso/50">Description</label>
+                          <textarea
+                            value={editDesc}
+                            onChange={(e) => setEditDesc(e.target.value)}
+                            rows={3}
+                            className="input text-sm resize-none"
+                            placeholder="Short description shown on homepage"
+                          />
+                        </div>
                         <div className="flex gap-2 pt-1">
                           <button
                             onClick={() => saveEdit(c.id)}
