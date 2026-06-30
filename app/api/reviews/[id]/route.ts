@@ -24,9 +24,6 @@ export async function PATCH(
   const text = String(body.text ?? "").trim();
   const rating = Number(body.rating ?? 5);
 
-  if (!clientName) return NextResponse.json({ error: "Client name is required." }, { status: 400 });
-  if (!text) return NextResponse.json({ error: "Review text is required." }, { status: 400 });
-
   await updateReview(id, { clientName, role, text, rating });
   return NextResponse.json({ ok: true });
 }

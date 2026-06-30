@@ -23,8 +23,6 @@ export async function POST(request: Request) {
   const text = String(body.text ?? "").trim();
   const rating = Number(body.rating ?? 5);
 
-  if (!clientName) return NextResponse.json({ error: "Client name is required." }, { status: 400 });
-  if (!text) return NextResponse.json({ error: "Review text is required." }, { status: 400 });
   if (rating < 1 || rating > 5) return NextResponse.json({ error: "Rating must be 1–5." }, { status: 400 });
 
   const review = await addReview({ clientName, role, text, rating });

@@ -1374,8 +1374,6 @@ function ReviewsSection({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!clientName.trim()) { setError("Client name is required."); return; }
-    if (!text.trim()) { setError("Review text is required."); return; }
     setError(""); setBusy(true);
     try {
       const body = { clientName, role, text, rating };
