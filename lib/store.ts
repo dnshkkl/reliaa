@@ -8,6 +8,7 @@ import type {
   Product,
   Project,
   Message,
+  Review,
 } from "./types";
 import { seedData } from "./seed";
 
@@ -68,6 +69,9 @@ function normalize(raw: unknown): StoreData {
     products?: LegacyProduct[];
     projects?: Project[];
     messages?: Message[];
+    heroSlides?: string[];
+    whyChooseImageUrl?: string;
+    reviews?: Partial<Review>[];
   };
   return {
     categories: data.categories ?? [],
@@ -76,7 +80,6 @@ function normalize(raw: unknown): StoreData {
       categoryId: p.categoryId ?? "",
       name: p.name ?? "",
       description: p.description ?? "",
-      // migrate single imageUrl -> images[]
       images:
         p.images && p.images.length
           ? p.images
@@ -87,6 +90,16 @@ function normalize(raw: unknown): StoreData {
     })),
     projects: data.projects ?? [],
     messages: data.messages ?? [],
+    heroSlides: data.heroSlides ?? [],
+    whyChooseImageUrl: data.whyChooseImageUrl ?? "",
+    reviews: (data.reviews ?? []).map((r) => ({
+      id: r.id ?? randomUUID(),
+      clientName: r.clientName ?? "",
+      role: r.role ?? "",
+      text: r.text ?? "",
+      rating: r.rating ?? 5,
+      createdAt: r.createdAt ?? new Date().toISOString(),
+    })),
   };
 }
 
@@ -451,5 +464,98 @@ export async function markMessageRead(
 export async function deleteMessage(id: string): Promise<void> {
   const data = await readData();
   data.messages = data.messages.filter((m) => m.id !== id);
+  await writeData(data);
+}
+
+// ---------------------------------------------------------------------------
+// Hero Slides
+// ---------------------------------------------------------------------------
+
+export async function getHeroSlides(): Promise<string[]> {
+  return (await readData()).heroSlides;
+}
+
+export async function addHeroSlide(imageUrl: string): Promise<void> {
+  const data = await readData();
+  data.heroSlides.push(imageUrl);
+  await writeData(data);
+}
+
+export async function removeHeroSlide(imageUrl: string): Promise<void> {
+  const data = await readData();
+  await deleteImage(imageUrl);
+  data.heroSlides = data.heroSlides.filter((s) => s !== imageUrl);
+  await writeData(data);
+}
+
+// ---------------------------------------------------------------------------
+// Why Choose section
+// ---------------------------------------------------------------------------
+
+export async function getWhyChooseImageUrl(): Promise<string> {
+  return (await readData()).whyChooseImageUrl ?? "";
+}
+
+export async function setWhyChooseImage(imageUrl: string): Promise<void> {
+  const data = await readData();
+  if (data.whyChooseImageUrl) await deleteImage(data.whyChooseImageUrl);
+  data.whyChooseImageUrl = imageUrl;
+  await writeData(data);
+}
+
+export async function removeWhyChooseImage(): Promise<void> {
+  const data = await readData();
+  if (data.whyChooseImageUrl) {
+    await deleteImage(data.whyChooseImageUrl);
+    data.whyChooseImageUrl = "";
+  }
+  await writeData(data);
+}
+
+// ---------------------------------------------------------------------------
+// Reviews
+// ---------------------------------------------------------------------------
+
+export async function getReviews(): Promise<Review[]> {
+  return (await readData()).reviews;
+}
+
+export async function addReview(input: {
+  clientName: string;
+  role: string;
+  text: string;
+  rating: number;
+}): Promise<Review> {
+  const data = await readData();
+  const review: Review = {
+    id: randomUUID(),
+    clientName: input.clientName.trim(),
+    role: input.role.trim(),
+    text: input.text.trim(),
+    rating: Math.min(5, Math.max(1, input.rating)),
+    createdAt: new Date().toISOString(),
+  };
+  data.reviews.push(review);
+  await writeData(data);
+  return review;
+}
+
+export async function updateReview(
+  id: string,
+  input: { clientName: string; role: string; text: string; rating: number }
+): Promise<void> {
+  const data = await readData();
+  const review = data.reviews.find((r) => r.id === id);
+  if (!review) return;
+  review.clientName = input.clientName.trim();
+  review.role = input.role.trim();
+  review.text = input.text.trim();
+  review.rating = Math.min(5, Math.max(1, input.rating));
+  await writeData(data);
+}
+
+export async function deleteReview(id: string): Promise<void> {
+  const data = await readData();
+  data.reviews = data.reviews.filter((r) => r.id !== id);
   await writeData(data);
 }

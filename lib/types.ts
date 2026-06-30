@@ -41,9 +41,21 @@ export interface Message {
   createdAt: string;
 }
 
+export interface Review {
+  id: string;
+  clientName: string;
+  role: string;
+  text: string;
+  rating: number; // 1-5
+  createdAt: string;
+}
+
 export interface StoreData {
   categories: Category[];
   products: Product[];
   projects: Project[];
   messages: Message[];
+  heroSlides: string[];
+  whyChooseImageUrl: string;
+  reviews: Review[];
 }

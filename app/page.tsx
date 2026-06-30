@@ -3,25 +3,44 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import HeroSlideshow from "@/components/HeroSlideshow";
 import Reveal from "@/components/Reveal";
-import { getCategories, getProducts, getProjects } from "@/lib/store";
+import {
+  getCategories,
+  getHeroSlides,
+  getProducts,
+  getProjects,
+  getReviews,
+  getWhyChooseImageUrl,
+} from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
+const WHY_POINTS = [
+  { title: "Quality Craftsmanship", body: "Every piece is chosen for its build quality, finish and lasting durability." },
+  { title: "Timeless Design", body: "We curate furniture that remains beautiful for decades, not just seasons." },
+  { title: "Natural Materials", body: "Solid wood, genuine leather and natural fabrics throughout our collection." },
+  { title: "Expert Guidance", body: "Our team helps you find pieces that suit your space and lifestyle perfectly." },
+];
+
 export default async function HomePage() {
-  const [categories, products, projects] = await Promise.all([
-    getCategories(),
-    getProducts(),
-    getProjects(),
-  ]);
+  const [categories, products, projects, heroSlides, whyChooseImageUrl, reviews] =
+    await Promise.all([
+      getCategories(),
+      getProducts(),
+      getProjects(),
+      getHeroSlides(),
+      getWhyChooseImageUrl(),
+      getReviews(),
+    ]);
 
   const featured = [...products]
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     .slice(0, 6);
 
-  const heroImages = featured
-    .map((p) => p.images[0])
-    .filter(Boolean)
-    .slice(0, 5);
+  // Fall back to product images when no hero slides uploaded yet
+  const slideshowImages =
+    heroSlides.length > 0
+      ? heroSlides
+      : featured.map((p) => p.images[0]).filter(Boolean).slice(0, 5);
 
   const latestProjects = [...projects]
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
@@ -35,46 +54,86 @@ export default async function HomePage() {
       <SiteHeader />
 
       <main>
-        {/* Hero */}
-        <section className="relative overflow-hidden">
-          <div className="mx-auto grid max-w-6xl items-center gap-8 px-5 py-12 md:gap-12 md:px-6 md:py-20 lg:grid-cols-2 lg:py-28">
-            <div className="animate-fade-up">
-              <span className="text-xs uppercase tracking-[0.3em] text-clay sm:text-sm">
-                Contemporary Furniture
-              </span>
-              <h1 className="mt-4 font-serif text-4xl leading-[1.05] text-ink sm:text-5xl md:text-5xl lg:text-6xl">
-                Pieces that make a house feel like home.
-              </h1>
-              <p className="mt-5 max-w-md text-base leading-relaxed text-espresso/80 sm:text-lg">
-                Reliaa curates a collection of sofas, chairs and furniture
-                designed around clean lines, natural materials and quiet
-                comfort.
-              </p>
-              <div className="mt-7 flex flex-wrap gap-3">
-                <Link
-                  href="/collection"
-                  className="rounded-full bg-clay px-6 py-2.5 text-sm text-white transition-colors hover:bg-espresso sm:px-7 sm:py-3"
-                >
-                  Explore the Collection
-                </Link>
-                <Link
-                  href="/projects"
-                  className="rounded-full border border-ink/20 px-6 py-2.5 text-sm text-ink transition-colors hover:border-ink sm:px-7 sm:py-3"
-                >
-                  View Projects
-                </Link>
-              </div>
-            </div>
-
-            <div className="animate-fade-up [animation-delay:120ms]">
-              <div className="relative aspect-[3/2] overflow-hidden rounded-2xl bg-sand sm:aspect-[4/3] lg:aspect-[4/5] lg:rounded-[2rem]">
-                <HeroSlideshow images={heroImages} />
-              </div>
+        {/* ── 1. Hero Slideshow ─────────────────────────────────────────── */}
+        <section className="relative h-[75vh] min-h-[480px] overflow-hidden">
+          <HeroSlideshow images={slideshowImages} />
+          {/* Text overlay */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 px-5 text-center">
+            <span className="animate-fade-up text-xs uppercase tracking-[0.3em] text-white/80 sm:text-sm">
+              Contemporary Furniture
+            </span>
+            <h1 className="animate-fade-up mt-4 font-serif text-4xl leading-tight text-white [animation-delay:80ms] sm:text-5xl md:text-6xl lg:text-7xl">
+              Pieces that make a house<br className="hidden sm:block" /> feel like home.
+            </h1>
+            <div className="animate-fade-up mt-8 flex flex-wrap justify-center gap-3 [animation-delay:160ms]">
+              <Link
+                href="/collection"
+                className="rounded-full bg-white px-7 py-3 text-sm font-medium text-ink transition-colors hover:bg-cream"
+              >
+                Explore the Collection
+              </Link>
+              <Link
+                href="/projects"
+                className="rounded-full border border-white/60 px-7 py-3 text-sm text-white transition-colors hover:border-white hover:bg-white/10"
+              >
+                View Projects
+              </Link>
             </div>
           </div>
         </section>
 
-        {/* Categories */}
+        {/* ── 2. Why Choose Reliaa ─────────────────────────────────────── */}
+        <section className="relative overflow-hidden py-20 md:py-28">
+          {/* Background — image if uploaded, else solid */}
+          {whyChooseImageUrl ? (
+            <>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={whyChooseImageUrl}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+              <div className="absolute inset-0 bg-ink/70" />
+            </>
+          ) : (
+            <div className="absolute inset-0 bg-ink" />
+          )}
+
+          <div className="relative mx-auto max-w-6xl px-5 md:px-6">
+            <Reveal>
+              <div className="text-center">
+                <span className="text-xs uppercase tracking-[0.3em] text-clay sm:text-sm">
+                  Our Promise
+                </span>
+                <h2 className="mt-3 font-serif text-3xl text-white md:text-4xl lg:text-5xl">
+                  Why Choose Reliaa
+                </h2>
+                <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-white/70">
+                  Reliaa curates a collection of sofas, chairs and furniture
+                  designed around clean lines, natural materials and quiet comfort.
+                </p>
+              </div>
+            </Reveal>
+
+            <div className="mt-12 grid gap-6 sm:grid-cols-2 md:mt-16 lg:grid-cols-4">
+              {WHY_POINTS.map((point, i) => (
+                <Reveal key={point.title} delay={i * 80}>
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
+                    <div className="mb-3 h-10 w-10 rounded-xl bg-clay/20 flex items-center justify-center">
+                      <svg className="h-5 w-5 text-clay" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <h3 className="font-serif text-lg text-white">{point.title}</h3>
+                    <p className="mt-2 text-sm leading-relaxed text-white/60">{point.body}</p>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── 3. Categories ────────────────────────────────────────────── */}
         <section id="categories" className="bg-white py-14 md:py-20">
           <div className="mx-auto max-w-6xl px-5 md:px-6">
             <Reveal>
@@ -100,7 +159,6 @@ export default async function HomePage() {
               {categories.map((cat, i) => (
                 <Reveal key={cat.id} delay={i * 90}>
                   {cat.imageUrl ? (
-                    /* With background image — overlay layout */
                     <Link
                       href={`/collection?category=${cat.slug}`}
                       className="group relative block h-full min-h-[180px] overflow-hidden rounded-2xl shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
@@ -133,7 +191,6 @@ export default async function HomePage() {
                       </div>
                     </Link>
                   ) : (
-                    /* No image — plain card */
                     <Link
                       href={`/collection?category=${cat.slug}`}
                       className="group block h-full rounded-2xl border border-sand/70 bg-cream p-5 transition-all hover:-translate-y-1 hover:border-clay hover:shadow-lg sm:p-6 md:p-8"
@@ -161,9 +218,60 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* Featured */}
-        {featured.length > 0 && (
+        {/* ── 4. Client Reviews ────────────────────────────────────────── */}
+        {reviews.length > 0 && (
           <section className="py-14 md:py-20">
+            <div className="mx-auto max-w-6xl px-5 md:px-6">
+              <Reveal>
+                <div className="text-center">
+                  <span className="text-xs uppercase tracking-[0.3em] text-clay sm:text-sm">
+                    Testimonials
+                  </span>
+                  <h2 className="mt-2 font-serif text-3xl text-ink md:mt-3 md:text-4xl">
+                    What Our Clients Say
+                  </h2>
+                </div>
+              </Reveal>
+
+              <div className="mt-10 grid gap-5 sm:grid-cols-2 md:mt-12 lg:grid-cols-3">
+                {reviews.map((review, i) => (
+                  <Reveal key={review.id} delay={(i % 3) * 80}>
+                    <div className="flex h-full flex-col rounded-2xl border border-sand/70 bg-white p-6 shadow-sm md:p-7">
+                      {/* Stars */}
+                      <div className="flex gap-0.5">
+                        {Array.from({ length: 5 }).map((_, s) => (
+                          <svg
+                            key={s}
+                            className={`h-4 w-4 ${s < review.rating ? "text-clay" : "text-sand"}`}
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                        ))}
+                      </div>
+                      {/* Quote */}
+                      <p className="mt-4 flex-1 text-sm leading-relaxed text-espresso/80">
+                        &ldquo;{review.text}&rdquo;
+                      </p>
+                      {/* Client */}
+                      <div className="mt-5 border-t border-sand/60 pt-4">
+                        <p className="font-serif text-base text-ink">{review.clientName}</p>
+                        {review.role && (
+                          <p className="mt-0.5 text-xs text-espresso/50">{review.role}</p>
+                        )}
+                      </div>
+                    </div>
+                  </Reveal>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ── 5. Featured products ─────────────────────────────────────── */}
+        {featured.length > 0 && (
+          <section className={`py-14 md:py-20 ${reviews.length > 0 ? "bg-white" : ""}`}>
             <div className="mx-auto max-w-6xl px-5 md:px-6">
               <Reveal>
                 <span className="text-xs uppercase tracking-[0.3em] text-clay sm:text-sm">
@@ -214,7 +322,7 @@ export default async function HomePage() {
           </section>
         )}
 
-        {/* Projects teaser */}
+        {/* ── 6. Projects teaser ───────────────────────────────────────── */}
         {latestProjects.length > 0 && (
           <section className="bg-white py-14 md:py-20">
             <div className="mx-auto max-w-6xl px-5 md:px-6">
@@ -270,10 +378,7 @@ export default async function HomePage() {
               </div>
 
               <div className="mt-8 text-center md:hidden">
-                <Link
-                  href="/projects"
-                  className="text-sm text-espresso hover:text-clay"
-                >
+                <Link href="/projects" className="text-sm text-espresso hover:text-clay">
                   All projects →
                 </Link>
               </div>
@@ -281,7 +386,7 @@ export default async function HomePage() {
           </section>
         )}
 
-        {/* Story / banner */}
+        {/* ── 7. Story banner ──────────────────────────────────────────── */}
         <section className="bg-ink py-14 text-cream md:py-20">
           <div className="mx-auto max-w-4xl px-5 text-center md:px-6">
             <Reveal>

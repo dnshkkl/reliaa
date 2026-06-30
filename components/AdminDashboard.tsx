@@ -4,9 +4,9 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import type { Category, Message, Product, Project } from "@/lib/types";
+import type { Category, Message, Product, Project, Review } from "@/lib/types";
 
-type Section = "products" | "projects" | "categories" | "banners" | "inbox";
+type Section = "products" | "projects" | "categories" | "banners" | "hero-slides" | "why-choose" | "reviews" | "inbox";
 
 // ─── Icons ───────────────────────────────────────────────────────────────────
 
@@ -77,6 +77,27 @@ function IcMenu() {
     </svg>
   );
 }
+function IcSlides() {
+  return (
+    <svg className="h-[18px] w-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 4h16a1 1 0 011 1v14a1 1 0 01-1 1H4a1 1 0 01-1-1V5a1 1 0 011-1z" />
+    </svg>
+  );
+}
+function IcCheck() {
+  return (
+    <svg className="h-[18px] w-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+    </svg>
+  );
+}
+function IcStar() {
+  return (
+    <svg className="h-[18px] w-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+    </svg>
+  );
+}
 
 // ─── Root dashboard ───────────────────────────────────────────────────────────
 
@@ -85,11 +106,17 @@ export default function AdminDashboard({
   products,
   projects,
   messages,
+  heroSlides,
+  whyChooseImageUrl,
+  reviews,
 }: {
   categories: Category[];
   products: Product[];
   projects: Project[];
   messages: Message[];
+  heroSlides: string[];
+  whyChooseImageUrl: string;
+  reviews: Review[];
 }) {
   const router = useRouter();
   const [section, setSection] = useState<Section>("products");
@@ -110,11 +137,14 @@ export default function AdminDashboard({
     count?: number;
     badge?: number;
   }[] = [
-    { id: "products",   label: "Products",         icon: <IcBox />,    count: products.length   },
-    { id: "projects",   label: "Projects",         icon: <IcPhoto />,  count: projects.length   },
-    { id: "categories", label: "Categories",       icon: <IcTag />,    count: categories.length },
-    { id: "banners",    label: "Category Banners", icon: <IcBanner />, count: categories.filter(c => c.imageUrl).length },
-    { id: "inbox",      label: "Inbox",            icon: <IcMail />,   badge: unread            },
+    { id: "products",    label: "Products",         icon: <IcBox />,    count: products.length   },
+    { id: "projects",    label: "Projects",         icon: <IcPhoto />,  count: projects.length   },
+    { id: "categories",  label: "Categories",       icon: <IcTag />,    count: categories.length },
+    { id: "banners",     label: "Category Banners", icon: <IcBanner />, count: categories.filter(c => c.imageUrl).length },
+    { id: "hero-slides", label: "Hero Slideshow",   icon: <IcSlides />, count: heroSlides.length },
+    { id: "why-choose",  label: "Why Choose",       icon: <IcCheck />,  count: whyChooseImageUrl ? 1 : 0 },
+    { id: "reviews",     label: "Reviews",          icon: <IcStar />,   count: reviews.length    },
+    { id: "inbox",       label: "Inbox",            icon: <IcMail />,   badge: unread            },
   ];
 
   function NavBtn({ item }: { item: (typeof navItems)[0] }) {
@@ -204,6 +234,15 @@ export default function AdminDashboard({
           )}
           {section === "banners" && (
             <BannersSection categories={categories} onChange={refresh} />
+          )}
+          {section === "hero-slides" && (
+            <HeroSlidesSection slides={heroSlides} onChange={refresh} />
+          )}
+          {section === "why-choose" && (
+            <WhyChooseSection imageUrl={whyChooseImageUrl} onChange={refresh} />
+          )}
+          {section === "reviews" && (
+            <ReviewsSection reviews={reviews} onChange={refresh} />
           )}
           {section === "inbox" && (
             <InboxSection messages={messages} onChange={refresh} />
@@ -1087,6 +1126,399 @@ function BannerCard({
             {removing ? "…" : "Remove"}
           </button>
         )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Hero Slides section ──────────────────────────────────────────────────────
+
+function HeroSlidesSection({
+  slides,
+  onChange,
+}: {
+  slides: string[];
+  onChange: () => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError("");
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("image", file);
+      const res = await fetch("/api/hero-slides", { method: "POST", body: fd });
+      if (!res.ok) {
+        setError(((await res.json().catch(() => ({}))).error) || "Upload failed.");
+      } else {
+        onChange();
+      }
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  }
+
+  async function handleRemove(url: string) {
+    if (!confirm("Remove this slide?")) return;
+    await fetch("/api/hero-slides", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    });
+    onChange();
+  }
+
+  return (
+    <div className="flex h-full flex-col overflow-hidden">
+      <div className="flex-shrink-0 border-b border-sand/60 bg-white px-6 py-4">
+        <h1 className="font-serif text-xl text-ink">Hero Slideshow</h1>
+        <p className="mt-0.5 text-xs text-espresso/50">
+          Images that appear in the full-width slideshow at the top of the homepage.
+          {slides.length === 0 && " When empty, product images are used as fallback."}
+        </p>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-5 lg:p-6">
+        {error && <p className="mb-4 rounded-lg bg-red-50 px-4 py-2 text-xs text-red-600">{error}</p>}
+
+        {slides.length === 0 ? (
+          <EmptyState label="No slides uploaded yet. Upload images below to populate the hero slideshow." />
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {slides.map((url, i) => (
+              <div key={url} className="group relative overflow-hidden rounded-2xl bg-sand shadow-sm ring-1 ring-sand/60">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={url} alt={`Slide ${i + 1}`} className="aspect-[16/9] w-full object-cover" />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/40">
+                  <button
+                    onClick={() => handleRemove(url)}
+                    className="scale-75 rounded-full bg-red-500 px-4 py-2 text-xs font-medium text-white opacity-0 transition-all group-hover:scale-100 group-hover:opacity-100"
+                  >
+                    Remove
+                  </button>
+                </div>
+                <div className="absolute left-2 top-2 rounded-full bg-black/40 px-2 py-0.5 text-[10px] text-white">
+                  Slide {i + 1}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <label className={`mt-5 flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed py-5 text-sm transition-colors ${
+          uploading ? "border-clay bg-clay/5 text-clay" : "border-sand bg-white text-espresso/60 hover:border-clay hover:text-clay"
+        }`}>
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M12 4v16m8-8H4" />
+          </svg>
+          {uploading ? "Uploading…" : "Add slide image"}
+          <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} className="hidden" />
+        </label>
+        <p className="mt-2 text-center text-[10px] text-espresso/40">JPG, PNG, WebP · 8 MB max · landscape images work best</p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Why Choose section ───────────────────────────────────────────────────────
+
+function WhyChooseSection({
+  imageUrl,
+  onChange,
+}: {
+  imageUrl: string;
+  onChange: () => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [removing, setRemoving] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError("");
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("image", file);
+      const res = await fetch("/api/why-choose/image", { method: "POST", body: fd });
+      if (!res.ok) {
+        setError(((await res.json().catch(() => ({}))).error) || "Upload failed.");
+      } else {
+        onChange();
+      }
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  }
+
+  async function handleRemove() {
+    if (!confirm("Remove the Why Choose background image?")) return;
+    setRemoving(true);
+    try {
+      await fetch("/api/why-choose/image", { method: "DELETE" });
+      onChange();
+    } finally {
+      setRemoving(false);
+    }
+  }
+
+  return (
+    <div className="flex h-full flex-col overflow-hidden">
+      <div className="flex-shrink-0 border-b border-sand/60 bg-white px-6 py-4">
+        <h1 className="font-serif text-xl text-ink">Why Choose Reliaa</h1>
+        <p className="mt-0.5 text-xs text-espresso/50">
+          Background image for the &ldquo;Why Choose Reliaa&rdquo; section on the homepage.
+          If no image is set, a dark background is used automatically.
+        </p>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-5 lg:p-6">
+        {error && <p className="mb-4 rounded-lg bg-red-50 px-4 py-2 text-xs text-red-600">{error}</p>}
+
+        {/* Preview */}
+        <div className="relative overflow-hidden rounded-2xl bg-ink shadow-sm" style={{ minHeight: 200 }}>
+          {imageUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={imageUrl} alt="Why Choose background" className="h-full w-full object-cover" style={{ minHeight: 200 }} />
+          )}
+          <div className="absolute inset-0 flex flex-col items-center justify-center bg-ink/70 px-6 text-center">
+            <p className="text-xs uppercase tracking-[0.3em] text-clay">Our Promise</p>
+            <p className="mt-2 font-serif text-xl text-white">Why Choose Reliaa</p>
+            <p className="mt-2 text-xs text-white/60">Background preview — feature bullets appear below in the live section.</p>
+          </div>
+        </div>
+
+        <div className="mt-4 flex gap-3">
+          <label className={`flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-medium text-white transition-colors ${
+            uploading ? "bg-clay/60" : "bg-clay hover:bg-espresso"
+          }`}>
+            {uploading ? "Uploading…" : imageUrl ? "Change image" : "Upload image"}
+            <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} className="hidden" />
+          </label>
+          {imageUrl && (
+            <button
+              onClick={handleRemove}
+              disabled={removing}
+              className="rounded-xl border border-sand px-4 py-2.5 text-sm text-red-500 transition-colors hover:bg-red-50 disabled:opacity-50"
+            >
+              {removing ? "…" : "Remove"}
+            </button>
+          )}
+        </div>
+        <p className="mt-2 text-center text-[10px] text-espresso/40">JPG, PNG, WebP · 8 MB max · wide/landscape images work best</p>
+
+        {/* Static feature preview */}
+        <div className="mt-6 rounded-2xl border border-sand/70 bg-white p-5">
+          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-espresso/40">Feature points shown on homepage</p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {[
+              "Quality Craftsmanship",
+              "Timeless Design",
+              "Natural Materials",
+              "Expert Guidance",
+            ].map((point) => (
+              <div key={point} className="flex items-center gap-2 text-sm text-espresso/70">
+                <svg className="h-4 w-4 flex-shrink-0 text-clay" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+                {point}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Reviews section ──────────────────────────────────────────────────────────
+
+function ReviewsSection({
+  reviews,
+  onChange,
+}: {
+  reviews: Review[];
+  onChange: () => void;
+}) {
+  const [editing, setEditing] = useState<Review | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+
+  // Form state
+  const [clientName, setClientName] = useState("");
+  const [role, setRole] = useState("");
+  const [text, setText] = useState("");
+  const [rating, setRating] = useState(5);
+
+  function startEdit(r: Review) {
+    setEditing(r);
+    setClientName(r.clientName);
+    setRole(r.role);
+    setText(r.text);
+    setRating(r.rating);
+    setError("");
+  }
+
+  function cancelEdit() {
+    setEditing(null);
+    setClientName(""); setRole(""); setText(""); setRating(5);
+    setError("");
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!clientName.trim()) { setError("Client name is required."); return; }
+    if (!text.trim()) { setError("Review text is required."); return; }
+    setError(""); setBusy(true);
+    try {
+      const body = { clientName, role, text, rating };
+      const url = editing ? `/api/reviews/${editing.id}` : "/api/reviews";
+      const method = editing ? "PATCH" : "POST";
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        setError(((await res.json().catch(() => ({}))).error) || "Could not save.");
+        return;
+      }
+      setClientName(""); setRole(""); setText(""); setRating(5);
+      setEditing(null);
+      onChange();
+    } catch { setError("Something went wrong."); }
+    finally { setBusy(false); }
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm("Delete this review?")) return;
+    await fetch(`/api/reviews/${id}`, { method: "DELETE" });
+    if (editing?.id === id) cancelEdit();
+    onChange();
+  }
+
+  return (
+    <div className="flex h-full flex-col overflow-hidden">
+      <div className="flex-shrink-0 border-b border-sand/60 bg-white px-6 py-4">
+        <h1 className="font-serif text-xl text-ink">Client Reviews</h1>
+        <p className="mt-0.5 text-xs text-espresso/50">
+          {reviews.length} {reviews.length === 1 ? "review" : "reviews"} · shown in the &ldquo;What Our Clients Say&rdquo; section on the homepage.
+        </p>
+      </div>
+
+      <div className="flex h-full min-h-0 flex-1">
+        {/* Form panel */}
+        <div className="w-full flex-shrink-0 overflow-y-auto border-b border-sand/60 p-5 lg:w-80 lg:border-b-0 lg:border-r lg:p-6 xl:w-96">
+          <SectionLabel>{editing ? "Edit review" : "Add review"}</SectionLabel>
+          {editing && (
+            <button onClick={cancelEdit} className="mt-1 text-xs text-espresso/50 hover:text-clay">✕ Cancel edit</button>
+          )}
+
+          <form onSubmit={handleSubmit} className="mt-4 space-y-3">
+            <Field label="Client name">
+              <input
+                className="input"
+                placeholder="e.g. Sarah Johnson"
+                value={clientName}
+                onChange={(e) => setClientName(e.target.value)}
+              />
+            </Field>
+            <Field label="Role / title (optional)">
+              <input
+                className="input"
+                placeholder="e.g. Interior Designer"
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+              />
+            </Field>
+            <Field label="Review text">
+              <textarea
+                className="input resize-none"
+                rows={4}
+                placeholder="What did they say about Reliaa?"
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+              />
+            </Field>
+            <Field label="Star rating">
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <button
+                    key={s}
+                    type="button"
+                    onClick={() => setRating(s)}
+                    className="transition-transform hover:scale-110"
+                  >
+                    <svg
+                      className={`h-6 w-6 ${s <= rating ? "text-clay" : "text-sand"}`}
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  </button>
+                ))}
+                <span className="ml-2 self-center text-xs text-espresso/50">{rating}/5</span>
+              </div>
+            </Field>
+
+            {error && <p className="text-xs text-red-600">{error}</p>}
+            <button
+              type="submit"
+              disabled={busy}
+              className="w-full rounded-lg bg-clay py-2.5 text-sm text-white transition-colors hover:bg-espresso disabled:opacity-60"
+            >
+              {busy ? "Saving…" : editing ? "Save changes" : "Add review"}
+            </button>
+          </form>
+        </div>
+
+        {/* Reviews list */}
+        <div className="flex-1 overflow-y-auto p-5 lg:p-6">
+          {reviews.length === 0 ? (
+            <EmptyState label="No reviews yet — add your first one." />
+          ) : (
+            <div className="space-y-4">
+              {[...reviews]
+                .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+                .map((r) => (
+                  <div
+                    key={r.id}
+                    className={`rounded-2xl p-5 shadow-sm ring-1 transition-all ${
+                      editing?.id === r.id ? "ring-clay/60 bg-clay/5" : "ring-sand/60 bg-white"
+                    }`}
+                  >
+                    <div className="flex gap-0.5 mb-2">
+                      {Array.from({ length: 5 }).map((_, s) => (
+                        <svg key={s} className={`h-3.5 w-3.5 ${s < r.rating ? "text-clay" : "text-sand"}`}
+                          fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                      ))}
+                    </div>
+                    <p className="text-sm leading-relaxed text-espresso/80 line-clamp-3">&ldquo;{r.text}&rdquo;</p>
+                    <div className="mt-3 flex items-center justify-between border-t border-sand/60 pt-3">
+                      <div>
+                        <p className="text-sm font-medium text-ink">{r.clientName}</p>
+                        {r.role && <p className="text-xs text-espresso/50">{r.role}</p>}
+                      </div>
+                      <div className="flex gap-3 text-xs">
+                        <button onClick={() => startEdit(r)} className="font-medium text-espresso hover:text-clay">Edit</button>
+                        <button onClick={() => handleDelete(r.id)} className="text-red-500 hover:underline">Delete</button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

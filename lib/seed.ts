@@ -29,4 +29,7 @@ export const seedData: StoreData = {
   products: [],
   projects: [],
   messages: [],
+  heroSlides: [],
+  whyChooseImageUrl: "",
+  reviews: [],
 };
