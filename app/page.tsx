@@ -14,13 +14,6 @@ import {
 
 export const dynamic = "force-dynamic";
 
-const WHY_POINTS = [
-  { title: "Quality Craftsmanship", body: "Every piece is chosen for its build quality, finish and lasting durability." },
-  { title: "Timeless Design", body: "We curate furniture that remains beautiful for decades, not just seasons." },
-  { title: "Natural Materials", body: "Solid wood, genuine leather and natural fabrics throughout our collection." },
-  { title: "Expert Guidance", body: "Our team helps you find pieces that suit your space and lifestyle perfectly." },
-];
-
 export default async function HomePage() {
   const [categories, products, projects, heroSlides, whyChooseImageUrl, reviews] =
     await Promise.all([
@@ -57,81 +50,34 @@ export default async function HomePage() {
         {/* ── 1. Hero Slideshow ─────────────────────────────────────────── */}
         <section className="relative h-[75vh] min-h-[480px] overflow-hidden">
           <HeroSlideshow images={slideshowImages} />
-          {/* Text overlay */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/30 px-5 text-center">
-            <span className="animate-fade-up text-xs uppercase tracking-[0.3em] text-white/80 sm:text-sm">
-              Contemporary Furniture
-            </span>
-            <h1 className="animate-fade-up mt-4 font-serif text-4xl leading-tight text-white [animation-delay:80ms] sm:text-5xl md:text-6xl lg:text-7xl">
-              Pieces that make a house<br className="hidden sm:block" /> feel like home.
-            </h1>
-            <div className="animate-fade-up mt-8 flex flex-wrap justify-center gap-3 [animation-delay:160ms]">
-              <Link
-                href="/collection"
-                className="rounded-full bg-white px-7 py-3 text-sm font-medium text-ink transition-colors hover:bg-cream"
-              >
-                Explore the Collection
-              </Link>
-              <Link
-                href="/projects"
-                className="rounded-full border border-white/60 px-7 py-3 text-sm text-white transition-colors hover:border-white hover:bg-white/10"
-              >
-                View Projects
-              </Link>
-            </div>
+          {/* CTA buttons — bottom right only */}
+          <div className="absolute bottom-6 right-6 flex flex-wrap justify-end gap-3 sm:bottom-8 sm:right-8">
+            <Link
+              href="/collection"
+              className="rounded-full bg-white/90 px-5 py-2.5 text-sm font-medium text-ink shadow backdrop-blur-sm transition-colors hover:bg-white"
+            >
+              Explore the Collection
+            </Link>
+            <Link
+              href="/projects"
+              className="rounded-full border border-white/70 bg-white/10 px-5 py-2.5 text-sm text-white shadow backdrop-blur-sm transition-colors hover:bg-white/20"
+            >
+              View Projects
+            </Link>
           </div>
         </section>
 
         {/* ── 2. Why Choose Reliaa ─────────────────────────────────────── */}
-        <section className="relative overflow-hidden py-20 md:py-28">
-          {/* Background — image if uploaded, else solid */}
-          {whyChooseImageUrl ? (
-            <>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={whyChooseImageUrl}
-                alt=""
-                className="absolute inset-0 h-full w-full object-cover"
-              />
-              <div className="absolute inset-0 bg-ink/70" />
-            </>
-          ) : (
-            <div className="absolute inset-0 bg-ink" />
-          )}
-
-          <div className="relative mx-auto max-w-6xl px-5 md:px-6">
-            <Reveal>
-              <div className="text-center">
-                <span className="text-xs uppercase tracking-[0.3em] text-clay sm:text-sm">
-                  Our Promise
-                </span>
-                <h2 className="mt-3 font-serif text-3xl text-white md:text-4xl lg:text-5xl">
-                  Why Choose Reliaa
-                </h2>
-                <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-white/70">
-                  Reliaa curates a collection of sofas, chairs and furniture
-                  designed around clean lines, natural materials and quiet comfort.
-                </p>
-              </div>
-            </Reveal>
-
-            <div className="mt-12 grid gap-6 sm:grid-cols-2 md:mt-16 lg:grid-cols-4">
-              {WHY_POINTS.map((point, i) => (
-                <Reveal key={point.title} delay={i * 80}>
-                  <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm">
-                    <div className="mb-3 h-10 w-10 rounded-xl bg-clay/20 flex items-center justify-center">
-                      <svg className="h-5 w-5 text-clay" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                    <h3 className="font-serif text-lg text-white">{point.title}</h3>
-                    <p className="mt-2 text-sm leading-relaxed text-white/60">{point.body}</p>
-                  </div>
-                </Reveal>
-              ))}
-            </div>
-          </div>
-        </section>
+        {whyChooseImageUrl && (
+          <section className="relative overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={whyChooseImageUrl}
+              alt="Why Choose Reliaa"
+              className="block w-full object-cover"
+            />
+          </section>
+        )}
 
         {/* ── 3. Categories ────────────────────────────────────────────── */}
         <section id="categories" className="bg-white py-14 md:py-20">
