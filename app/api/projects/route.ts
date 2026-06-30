@@ -23,9 +23,8 @@ export async function POST(request: Request) {
   const location = String(form.get("location") ?? "").trim();
   const type = String(form.get("type") ?? "").trim();
   const description = String(form.get("description") ?? "").trim();
-  const files = form
-    .getAll("images")
-    .filter((f): f is File => f instanceof File);
+  const files = form.getAll("images").filter((f): f is File => f instanceof File);
+  const addedUrls = form.getAll("addedUrl").map(String).filter(Boolean);
 
   if (!title) {
     return NextResponse.json(
@@ -34,10 +33,19 @@ export async function POST(request: Request) {
     );
   }
 
-  const error = validateImages(files);
-  if (error) return NextResponse.json({ error }, { status: 400 });
+  if (files.length === 0 && addedUrls.length === 0) {
+    return NextResponse.json({ error: "At least one image is required." }, { status: 400 });
+  }
 
-  const images = await saveImages(files);
+  let images: string[];
+  if (files.length > 0) {
+    const error = validateImages(files);
+    if (error) return NextResponse.json({ error }, { status: 400 });
+    images = [...addedUrls, ...(await saveImages(files))];
+  } else {
+    images = addedUrls;
+  }
+
   const project = await addProject({
     title,
     location,

@@ -32,8 +32,9 @@ export async function PATCH(
 
   // Existing image URLs the user chose to keep
   const keepImages = form.getAll("keepImages").map(String).filter(Boolean);
-
-  // New files to upload
+  // Pre-uploaded URLs from the client
+  const addedUrls = form.getAll("addedUrl").map(String).filter(Boolean);
+  // New files to upload (fallback path)
   const newFiles = form
     .getAll("images")
     .filter((f): f is File => f instanceof File && f.size > 0);
@@ -52,17 +53,15 @@ export async function PATCH(
     if (err) return NextResponse.json({ error: err }, { status: 400 });
   }
 
-  const finalImageCount = keepImages.length + newFiles.length;
-  if (finalImageCount === 0) {
+  if (keepImages.length + addedUrls.length + newFiles.length === 0) {
     return NextResponse.json(
       { error: "At least one image is required." },
       { status: 400 }
     );
   }
 
-  // Upload new files and build final image list
   const uploadedUrls = newFiles.length > 0 ? await saveImages(newFiles) : [];
-  const finalImages = [...keepImages, ...uploadedUrls];
+  const finalImages = [...keepImages, ...addedUrls, ...uploadedUrls];
 
   // Delete images that were removed (in current product but not in keepImages)
   const { promises: fs } = await import("fs");

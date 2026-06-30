@@ -26,6 +26,7 @@ export async function PATCH(
   const description = String(form.get("description") ?? "").trim();
 
   const keepImages = form.getAll("keepImages").map(String).filter(Boolean);
+  const addedUrls = form.getAll("addedUrl").map(String).filter(Boolean);
   const newFiles = form
     .getAll("images")
     .filter((f): f is File => f instanceof File && f.size > 0);
@@ -39,7 +40,7 @@ export async function PATCH(
     if (err) return NextResponse.json({ error: err }, { status: 400 });
   }
 
-  if (keepImages.length + newFiles.length === 0) {
+  if (keepImages.length + addedUrls.length + newFiles.length === 0) {
     return NextResponse.json(
       { error: "At least one image is required." },
       { status: 400 }
@@ -47,7 +48,7 @@ export async function PATCH(
   }
 
   const uploadedUrls = newFiles.length > 0 ? await saveImages(newFiles) : [];
-  const finalImages = [...keepImages, ...uploadedUrls];
+  const finalImages = [...keepImages, ...addedUrls, ...uploadedUrls];
 
   // Delete removed images
   const { promises: fs } = await import("fs");

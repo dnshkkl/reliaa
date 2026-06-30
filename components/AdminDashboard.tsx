@@ -319,31 +319,50 @@ function ProductForm({
   const formRef = useRef<HTMLFormElement>(null);
   const isEdit = !!editing;
 
-  // Existing images the user is keeping (can remove individually)
   const [keepImages, setKeepImages] = useState<string[]>(editing?.images ?? []);
-  // New files chosen for upload
-  const [newFiles, setNewFiles] = useState<File[]>([]);
-  const [newPreviews, setNewPreviews] = useState<string[]>([]);
-
+  const [addedUrls, setAddedUrls] = useState<string[]>([]);
+  const [addedPreviews, setAddedPreviews] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
-    setNewFiles((prev) => [...prev, ...files]);
-    setNewPreviews((prev) => [...prev, ...files.map((f) => URL.createObjectURL(f))]);
-    // Reset input so the same file can be re-selected if needed
     e.target.value = "";
+    if (!files.length) return;
+    setError("");
+    setUploading(true);
+    for (const file of files) {
+      const preview = URL.createObjectURL(file);
+      try {
+        const fd = new FormData();
+        fd.append("image", file);
+        const res = await fetch("/api/upload", { method: "POST", body: fd });
+        if (!res.ok) {
+          setError(((await res.json().catch(() => ({}))).error) || "Upload failed.");
+          setUploading(false);
+          return;
+        }
+        const { url } = await res.json();
+        setAddedUrls((prev) => [...prev, url]);
+        setAddedPreviews((prev) => [...prev, preview]);
+      } catch {
+        setError("Upload failed. Please try again.");
+        setUploading(false);
+        return;
+      }
+    }
+    setUploading(false);
   }
 
   function removeExisting(url: string) {
     setKeepImages((prev) => prev.filter((u) => u !== url));
   }
 
-  function removeNew(index: number) {
-    setNewFiles((prev) => prev.filter((_, i) => i !== index));
-    setNewPreviews((prev) => prev.filter((_, i) => i !== index));
+  function removeAdded(index: number) {
+    setAddedUrls((prev) => prev.filter((_, i) => i !== index));
+    setAddedPreviews((prev) => prev.filter((_, i) => i !== index));
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -351,18 +370,10 @@ function ProductForm({
     setError(""); setSuccess(""); setBusy(true);
     try {
       const fd = new FormData(e.currentTarget);
-      // Remove the default 'images' entries — we manage them manually
-      // (form fields other than images are still included via FormData)
+      if (isEdit) keepImages.forEach((url) => fd.append("keepImages", url));
+      addedUrls.forEach((url) => fd.append("addedUrl", url));
 
-      if (isEdit) {
-        // Send kept image URLs
-        keepImages.forEach((url) => fd.append("keepImages", url));
-      }
-      // Send new files
-      newFiles.forEach((file) => fd.append("images", file));
-
-      const totalImages = keepImages.length + newFiles.length;
-      if (totalImages === 0) {
+      if (keepImages.length + addedUrls.length === 0) {
         setError("At least one image is required.");
         setBusy(false);
         return;
@@ -376,8 +387,8 @@ function ProductForm({
         return;
       }
       formRef.current?.reset();
-      setNewFiles([]);
-      setNewPreviews([]);
+      setAddedUrls([]);
+      setAddedPreviews([]);
       setSuccess(isEdit ? "Changes saved." : "Product added.");
       onDone();
     } catch { setError("Something went wrong."); }
@@ -449,16 +460,16 @@ function ProductForm({
               </div>
             )}
 
-            {/* New image previews with remove buttons */}
-            {newPreviews.length > 0 && (
+            {/* Newly uploaded image previews */}
+            {addedPreviews.length > 0 && (
               <div className="flex flex-wrap gap-2">
-                {newPreviews.map((src, i) => (
+                {addedPreviews.map((src, i) => (
                   <div key={src} className="relative">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={src} alt="" className="h-16 w-20 rounded-lg object-cover ring-1 ring-clay/60" />
                     <button
                       type="button"
-                      onClick={() => removeNew(i)}
+                      onClick={() => removeAdded(i)}
                       className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white shadow"
                       title="Remove"
                     >
@@ -470,12 +481,12 @@ function ProductForm({
             )}
 
             {/* Upload zone */}
-            <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-sand bg-[#f5f1ec] py-4 text-center transition-colors hover:border-clay">
+            <label className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed py-4 text-center transition-colors ${uploading ? "border-clay bg-clay/5 cursor-not-allowed" : "border-sand bg-[#f5f1ec] hover:border-clay"}`}>
               <span className="text-xs text-espresso/50">
-                {keepImages.length + newPreviews.length > 0 ? "Add more images" : "Click to choose image(s)"}
+                {uploading ? "Uploading…" : keepImages.length + addedPreviews.length > 0 ? "Add more images" : "Click to choose image(s)"}
               </span>
               <span className="mt-0.5 text-[10px] text-espresso/40">JPG, PNG, WebP · 8 MB max · up to 10</span>
-              <input type="file" accept="image/*" multiple onChange={onFileChange} className="hidden" />
+              <input type="file" accept="image/*" multiple onChange={onFileChange} disabled={uploading} className="hidden" />
             </label>
           </div>
         </Field>
@@ -483,9 +494,9 @@ function ProductForm({
         {error   && <p className="text-xs text-red-600">{error}</p>}
         {success && <p className="text-xs text-green-700">{success}</p>}
         <div className="flex gap-2">
-          <button type="submit" disabled={busy}
+          <button type="submit" disabled={busy || uploading}
             className="flex-1 rounded-lg bg-clay py-2.5 text-sm text-white transition-colors hover:bg-espresso disabled:opacity-60">
-            {busy ? "Saving…" : isEdit ? "Save changes" : "Add to collection"}
+            {uploading ? "Uploading…" : busy ? "Saving…" : isEdit ? "Save changes" : "Add to collection"}
           </button>
           {isEdit && (
             <button type="button" onClick={onCancel}
@@ -598,26 +609,49 @@ function ProjectForm({
   const isEdit = !!editing;
 
   const [keepImages, setKeepImages] = useState<string[]>(editing?.images ?? []);
-  const [newFiles, setNewFiles] = useState<File[]>([]);
-  const [newPreviews, setNewPreviews] = useState<string[]>([]);
+  const [addedUrls, setAddedUrls] = useState<string[]>([]);
+  const [addedPreviews, setAddedPreviews] = useState<string[]>([]);
+  const [uploading, setUploading] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function onFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
-    setNewFiles((prev) => [...prev, ...files]);
-    setNewPreviews((prev) => [...prev, ...files.map((f) => URL.createObjectURL(f))]);
     e.target.value = "";
+    if (!files.length) return;
+    setError("");
+    setUploading(true);
+    for (const file of files) {
+      const preview = URL.createObjectURL(file);
+      try {
+        const fd = new FormData();
+        fd.append("image", file);
+        const res = await fetch("/api/upload", { method: "POST", body: fd });
+        if (!res.ok) {
+          setError(((await res.json().catch(() => ({}))).error) || "Upload failed.");
+          setUploading(false);
+          return;
+        }
+        const { url } = await res.json();
+        setAddedUrls((prev) => [...prev, url]);
+        setAddedPreviews((prev) => [...prev, preview]);
+      } catch {
+        setError("Upload failed. Please try again.");
+        setUploading(false);
+        return;
+      }
+    }
+    setUploading(false);
   }
 
   function removeExisting(url: string) {
     setKeepImages((prev) => prev.filter((u) => u !== url));
   }
 
-  function removeNew(index: number) {
-    setNewFiles((prev) => prev.filter((_, i) => i !== index));
-    setNewPreviews((prev) => prev.filter((_, i) => i !== index));
+  function removeAdded(index: number) {
+    setAddedUrls((prev) => prev.filter((_, i) => i !== index));
+    setAddedPreviews((prev) => prev.filter((_, i) => i !== index));
   }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -626,9 +660,9 @@ function ProjectForm({
     try {
       const fd = new FormData(e.currentTarget);
       if (isEdit) keepImages.forEach((url) => fd.append("keepImages", url));
-      newFiles.forEach((file) => fd.append("images", file));
+      addedUrls.forEach((url) => fd.append("addedUrl", url));
 
-      if (keepImages.length + newFiles.length === 0) {
+      if (keepImages.length + addedUrls.length === 0) {
         setError("At least one image is required.");
         setBusy(false);
         return;
@@ -642,8 +676,8 @@ function ProjectForm({
         return;
       }
       formRef.current?.reset();
-      setNewFiles([]);
-      setNewPreviews([]);
+      setAddedUrls([]);
+      setAddedPreviews([]);
       setSuccess(isEdit ? "Changes saved." : "Project published.");
       onDone();
     } catch { setError("Something went wrong."); }
@@ -702,13 +736,13 @@ function ProjectForm({
                 ))}
               </div>
             )}
-            {newPreviews.length > 0 && (
+            {addedPreviews.length > 0 && (
               <div className="flex flex-wrap gap-2">
-                {newPreviews.map((src, i) => (
+                {addedPreviews.map((src, i) => (
                   <div key={src} className="relative">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={src} alt="" className="h-16 w-24 rounded-lg object-cover ring-1 ring-clay/60" />
-                    <button type="button" onClick={() => removeNew(i)}
+                    <button type="button" onClick={() => removeAdded(i)}
                       className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white shadow">
                       <span className="text-[10px] leading-none">✕</span>
                     </button>
@@ -716,12 +750,12 @@ function ProjectForm({
                 ))}
               </div>
             )}
-            <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-sand bg-[#f5f1ec] py-4 text-center transition-colors hover:border-clay">
+            <label className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed py-4 text-center transition-colors ${uploading ? "border-clay bg-clay/5 cursor-not-allowed" : "border-sand bg-[#f5f1ec] hover:border-clay"}`}>
               <span className="text-xs text-espresso/50">
-                {keepImages.length + newPreviews.length > 0 ? "Add more images" : "Click to choose image(s)"}
+                {uploading ? "Uploading…" : keepImages.length + addedPreviews.length > 0 ? "Add more images" : "Click to choose image(s)"}
               </span>
               <span className="mt-0.5 text-[10px] text-espresso/40">JPG, PNG, WebP · 8 MB max · up to 10</span>
-              <input type="file" accept="image/*" multiple onChange={onFileChange} className="hidden" />
+              <input type="file" accept="image/*" multiple onChange={onFileChange} disabled={uploading} className="hidden" />
             </label>
           </div>
         </Field>
@@ -729,9 +763,9 @@ function ProjectForm({
         {error   && <p className="text-xs text-red-600">{error}</p>}
         {success && <p className="text-xs text-green-700">{success}</p>}
         <div className="flex gap-2">
-          <button type="submit" disabled={busy}
+          <button type="submit" disabled={busy || uploading}
             className="flex-1 rounded-lg bg-clay py-2.5 text-sm text-white transition-colors hover:bg-espresso disabled:opacity-60">
-            {busy ? "Saving…" : isEdit ? "Save changes" : "Publish project"}
+            {uploading ? "Uploading…" : busy ? "Saving…" : isEdit ? "Save changes" : "Publish project"}
           </button>
           {isEdit && (
             <button type="button" onClick={onCancel}
