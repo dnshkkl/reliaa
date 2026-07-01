@@ -3,6 +3,7 @@ import type { StoreData } from "./types";
 // Default data used the first time the site runs, before anything is added
 // through the admin panel. Categories can be edited/added/removed in /admin.
 export const seedData: StoreData = {
+  mainCategories: [],
   categories: [
     {
       id: "sofas",

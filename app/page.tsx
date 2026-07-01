@@ -9,6 +9,7 @@ import {
   getCategories,
   getClientSlides,
   getHeroSlides,
+  getMainCategories,
   getProducts,
   getProjects,
   getReviews,
@@ -18,8 +19,9 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [categories, products, projects, heroSlides, whyChooseImageUrl, achievementSlides, clientSlides, reviews] =
+  const [mainCategories, categories, products, projects, heroSlides, whyChooseImageUrl, achievementSlides, clientSlides, reviews] =
     await Promise.all([
+      getMainCategories(),
       getCategories(),
       getProducts(),
       getProjects(),
@@ -46,6 +48,17 @@ export default async function HomePage() {
 
   const countFor = (categoryId: string) =>
     products.filter((p) => p.categoryId === categoryId).length;
+
+  // Count products across all sub-categories of a main category
+  const countForMain = (mainCategoryId: string) => {
+    const subIds = categories
+      .filter((c) => c.mainCategoryId === mainCategoryId)
+      .map((c) => c.id);
+    return products.filter((p) => subIds.includes(p.categoryId)).length;
+  };
+
+  // Homepage shows main categories if any exist, else sub-categories
+  const showMainCategories = mainCategories.length > 0;
 
   return (
     <>
@@ -106,65 +119,69 @@ export default async function HomePage() {
               </div>
             </Reveal>
 
+            {/* Show main categories when set, else sub-categories */}
             <div className="mt-8 grid gap-4 sm:grid-cols-2 md:mt-12 md:gap-6 lg:grid-cols-3">
-              {categories.map((cat, i) => (
-                <Reveal key={cat.id} delay={i * 90}>
-                  {cat.imageUrl ? (
-                    <Link
-                      href={`/collection?category=${cat.slug}`}
-                      className="group relative block h-full min-h-[180px] overflow-hidden rounded-2xl shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl"
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={cat.imageUrl}
-                        alt={cat.name}
-                        className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                      <div className="relative flex h-full flex-col justify-end p-5 sm:p-6 md:p-8">
-                        <div className="flex items-end justify-between">
-                          <h3 className="font-serif text-xl text-white sm:text-2xl">
-                            {cat.name}
-                          </h3>
-                          <span className="text-sm text-white/60">
-                            {countFor(cat.id)}{" "}
-                            {countFor(cat.id) === 1 ? "piece" : "pieces"}
-                          </span>
-                        </div>
-                        {cat.description && (
-                          <p className="mt-2 text-sm leading-relaxed text-white/75">
-                            {cat.description}
-                          </p>
+              {showMainCategories
+                ? mainCategories.map((mc, i) => {
+                    const count = countForMain(mc.id);
+                    const href = `/collection?main=${mc.slug}`;
+                    return (
+                      <Reveal key={mc.id} delay={i * 90}>
+                        {mc.imageUrl ? (
+                          <Link href={href} className="group relative block h-full min-h-[180px] overflow-hidden rounded-2xl shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            <img src={mc.imageUrl} alt={mc.name} className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                            <div className="relative flex h-full flex-col justify-end p-5 sm:p-6 md:p-8">
+                              <div className="flex items-end justify-between">
+                                <h3 className="font-serif text-xl text-white sm:text-2xl">{mc.name}</h3>
+                                <span className="text-sm text-white/60">{count} {count === 1 ? "piece" : "pieces"}</span>
+                              </div>
+                              {mc.description && <p className="mt-2 text-sm leading-relaxed text-white/75">{mc.description}</p>}
+                              <span className="mt-4 inline-block text-sm text-white opacity-0 transition-opacity group-hover:opacity-100">Explore {mc.name} →</span>
+                            </div>
+                          </Link>
+                        ) : (
+                          <Link href={href} className="group block h-full rounded-2xl border border-sand/70 bg-cream p-5 transition-all hover:-translate-y-1 hover:border-clay hover:shadow-lg sm:p-6 md:p-8">
+                            <div className="flex items-center justify-between">
+                              <h3 className="font-serif text-xl text-ink sm:text-2xl">{mc.name}</h3>
+                              <span className="text-sm text-espresso/50">{count} {count === 1 ? "piece" : "pieces"}</span>
+                            </div>
+                            <p className="mt-2 text-sm leading-relaxed text-espresso/70 md:mt-3">{mc.description}</p>
+                            <span className="mt-4 inline-block text-sm text-clay opacity-0 transition-opacity group-hover:opacity-100 md:mt-6">Explore {mc.name} →</span>
+                          </Link>
                         )}
-                        <span className="mt-4 inline-block text-sm text-white opacity-0 transition-opacity group-hover:opacity-100">
-                          Explore {cat.name} →
-                        </span>
-                      </div>
-                    </Link>
-                  ) : (
-                    <Link
-                      href={`/collection?category=${cat.slug}`}
-                      className="group block h-full rounded-2xl border border-sand/70 bg-cream p-5 transition-all hover:-translate-y-1 hover:border-clay hover:shadow-lg sm:p-6 md:p-8"
-                    >
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-serif text-xl text-ink sm:text-2xl">
-                          {cat.name}
-                        </h3>
-                        <span className="text-sm text-espresso/50">
-                          {countFor(cat.id)}{" "}
-                          {countFor(cat.id) === 1 ? "piece" : "pieces"}
-                        </span>
-                      </div>
-                      <p className="mt-2 text-sm leading-relaxed text-espresso/70 md:mt-3">
-                        {cat.description}
-                      </p>
-                      <span className="mt-4 inline-block text-sm text-clay opacity-0 transition-opacity group-hover:opacity-100 md:mt-6">
-                        Explore {cat.name} →
-                      </span>
-                    </Link>
-                  )}
-                </Reveal>
-              ))}
+                      </Reveal>
+                    );
+                  })
+                : categories.map((cat, i) => (
+                    <Reveal key={cat.id} delay={i * 90}>
+                      {cat.imageUrl ? (
+                        <Link href={`/collection?category=${cat.slug}`} className="group relative block h-full min-h-[180px] overflow-hidden rounded-2xl shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={cat.imageUrl} alt={cat.name} className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                          <div className="relative flex h-full flex-col justify-end p-5 sm:p-6 md:p-8">
+                            <div className="flex items-end justify-between">
+                              <h3 className="font-serif text-xl text-white sm:text-2xl">{cat.name}</h3>
+                              <span className="text-sm text-white/60">{countFor(cat.id)} {countFor(cat.id) === 1 ? "piece" : "pieces"}</span>
+                            </div>
+                            {cat.description && <p className="mt-2 text-sm leading-relaxed text-white/75">{cat.description}</p>}
+                            <span className="mt-4 inline-block text-sm text-white opacity-0 transition-opacity group-hover:opacity-100">Explore {cat.name} →</span>
+                          </div>
+                        </Link>
+                      ) : (
+                        <Link href={`/collection?category=${cat.slug}`} className="group block h-full rounded-2xl border border-sand/70 bg-cream p-5 transition-all hover:-translate-y-1 hover:border-clay hover:shadow-lg sm:p-6 md:p-8">
+                          <div className="flex items-center justify-between">
+                            <h3 className="font-serif text-xl text-ink sm:text-2xl">{cat.name}</h3>
+                            <span className="text-sm text-espresso/50">{countFor(cat.id)} {countFor(cat.id) === 1 ? "piece" : "pieces"}</span>
+                          </div>
+                          <p className="mt-2 text-sm leading-relaxed text-espresso/70 md:mt-3">{cat.description}</p>
+                          <span className="mt-4 inline-block text-sm text-clay opacity-0 transition-opacity group-hover:opacity-100 md:mt-6">Explore {cat.name} →</span>
+                        </Link>
+                      )}
+                    </Reveal>
+                  ))}
             </div>
           </div>
         </section>

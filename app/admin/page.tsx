@@ -4,6 +4,7 @@ import {
   getCategories,
   getClientSlides,
   getHeroSlides,
+  getMainCategories,
   getMessages,
   getProducts,
   getProjects,
@@ -14,8 +15,9 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const [categories, products, projects, messages, heroSlides, whyChooseImageUrl, achievementSlides, clientSlides, reviews] =
+  const [mainCategories, categories, products, projects, messages, heroSlides, whyChooseImageUrl, achievementSlides, clientSlides, reviews] =
     await Promise.all([
+      getMainCategories(),
       getCategories(),
       getProducts(),
       getProjects(),
@@ -29,6 +31,7 @@ export default async function AdminPage() {
 
   return (
     <AdminDashboard
+      mainCategories={mainCategories}
       categories={categories}
       products={products}
       projects={projects}

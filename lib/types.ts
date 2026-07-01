@@ -1,5 +1,14 @@
+export interface MainCategory {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  imageUrl?: string;
+}
+
 export interface Category {
   id: string;
+  mainCategoryId?: string; // which main category this sub-category belongs to
   name: string;
   slug: string;
   description: string;
@@ -51,6 +60,7 @@ export interface Review {
 }
 
 export interface StoreData {
+  mainCategories: MainCategory[];
   categories: Category[];
   products: Product[];
   projects: Project[];

@@ -4,9 +4,9 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import type { Category, Message, Product, Project, Review } from "@/lib/types";
+import type { MainCategory, Category, Message, Product, Project, Review } from "@/lib/types";
 
-type Section = "products" | "projects" | "categories" | "banners" | "hero-slides" | "why-choose" | "achievements" | "clients" | "reviews" | "inbox";
+type Section = "main-categories" | "products" | "projects" | "categories" | "banners" | "hero-slides" | "why-choose" | "achievements" | "clients" | "reviews" | "inbox";
 
 // ─── Icons ───────────────────────────────────────────────────────────────────
 
@@ -101,7 +101,17 @@ function IcStar() {
 
 // ─── Root dashboard ───────────────────────────────────────────────────────────
 
+function IcLayers() {
+  return (
+    <svg className="h-[18px] w-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75}
+        d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+    </svg>
+  );
+}
+
 export default function AdminDashboard({
+  mainCategories,
   categories,
   products,
   projects,
@@ -112,6 +122,7 @@ export default function AdminDashboard({
   clientSlides,
   reviews,
 }: {
+  mainCategories: MainCategory[];
   categories: Category[];
   products: Product[];
   projects: Project[];
@@ -141,16 +152,17 @@ export default function AdminDashboard({
     count?: number;
     badge?: number;
   }[] = [
-    { id: "products",    label: "Products",         icon: <IcBox />,    count: products.length   },
-    { id: "projects",    label: "Projects",         icon: <IcPhoto />,  count: projects.length   },
-    { id: "categories",  label: "Categories",       icon: <IcTag />,    count: categories.length },
-    { id: "banners",     label: "Category Banners", icon: <IcBanner />, count: categories.filter(c => c.imageUrl).length },
-    { id: "hero-slides", label: "Hero Slideshow",   icon: <IcSlides />, count: heroSlides.length },
-    { id: "why-choose",   label: "Why Choose",      icon: <IcCheck />,  count: whyChooseImageUrl ? 1 : 0 },
-    { id: "achievements", label: "Achievements",    icon: <IcSlides />, count: achievementSlides.length },
-    { id: "clients",      label: "Our Clients",     icon: <IcSlides />, count: clientSlides.length },
-    { id: "reviews",      label: "Reviews",         icon: <IcStar />,   count: reviews.length    },
-    { id: "inbox",       label: "Inbox",            icon: <IcMail />,   badge: unread            },
+    { id: "products",        label: "Products",         icon: <IcBox />,     count: products.length   },
+    { id: "projects",        label: "Projects",         icon: <IcPhoto />,   count: projects.length   },
+    { id: "main-categories", label: "Main Categories",  icon: <IcLayers />,  count: mainCategories.length },
+    { id: "categories",      label: "Sub-categories",   icon: <IcTag />,     count: categories.length },
+    { id: "banners",         label: "Category Banners", icon: <IcBanner />,  count: categories.filter(c => c.imageUrl).length },
+    { id: "hero-slides",     label: "Hero Slideshow",   icon: <IcSlides />,  count: heroSlides.length },
+    { id: "why-choose",      label: "Why Choose",       icon: <IcCheck />,   count: whyChooseImageUrl ? 1 : 0 },
+    { id: "achievements",    label: "Achievements",     icon: <IcSlides />,  count: achievementSlides.length },
+    { id: "clients",         label: "Our Clients",      icon: <IcSlides />,  count: clientSlides.length },
+    { id: "reviews",         label: "Reviews",          icon: <IcStar />,    count: reviews.length    },
+    { id: "inbox",           label: "Inbox",            icon: <IcMail />,    badge: unread            },
   ];
 
   function NavBtn({ item }: { item: (typeof navItems)[0] }) {
@@ -235,8 +247,11 @@ export default function AdminDashboard({
           {section === "projects" && (
             <ProjectsSection projects={projects} onChange={refresh} />
           )}
+          {section === "main-categories" && (
+            <MainCategoriesSection mainCategories={mainCategories} categories={categories} onChange={refresh} />
+          )}
           {section === "categories" && (
-            <CategoriesSection categories={categories} products={products} onChange={refresh} />
+            <CategoriesSection mainCategories={mainCategories} categories={categories} products={products} onChange={refresh} />
           )}
           {section === "banners" && (
             <BannersSection categories={categories} onChange={refresh} />
@@ -830,13 +845,251 @@ function ProjectForm({
   );
 }
 
+// ─── Main Categories section ──────────────────────────────────────────────────
+
+function MainCategoriesSection({
+  mainCategories,
+  categories,
+  onChange,
+}: {
+  mainCategories: MainCategory[];
+  categories: Category[];
+  onChange: () => void;
+}) {
+  const [editing, setEditing] = useState<MainCategory | null>(null);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [uploading, setUploading] = useState<string | null>(null);
+  const [removing, setRemoving] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  function startEdit(m: MainCategory) {
+    setEditing(m);
+    setName(m.name);
+    setDescription(m.description);
+    setError("");
+  }
+
+  function cancelEdit() {
+    setEditing(null);
+    setName(""); setDescription(""); setError("");
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(""); setBusy(true);
+    try {
+      const body = { name, description };
+      if (editing) {
+        const res = await fetch(`/api/main-categories/${editing.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) { setError((await res.json().catch(() => ({}))).error || "Could not save."); return; }
+        setEditing(null);
+      } else {
+        const res = await fetch("/api/main-categories", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) { setError((await res.json().catch(() => ({}))).error || "Could not add."); return; }
+      }
+      setName(""); setDescription("");
+      onChange();
+    } catch { setError("Something went wrong."); }
+    finally { setBusy(false); }
+  }
+
+  async function handleDelete(m: MainCategory) {
+    const subCount = categories.filter((c) => c.mainCategoryId === m.id).length;
+    const msg = subCount > 0
+      ? `Delete "${m.name}"? ${subCount} sub-categor${subCount === 1 ? "y" : "ies"} will be unlinked (not deleted).`
+      : `Delete "${m.name}"?`;
+    if (!confirm(msg)) return;
+    setDeleting(m.id);
+    try {
+      await fetch(`/api/main-categories/${m.id}`, { method: "DELETE" });
+      onChange();
+    } finally { setDeleting(null); }
+  }
+
+  async function handleImageUpload(id: string, e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(id);
+    try {
+      const fd = new FormData();
+      fd.append("image", file);
+      const res = await fetch(`/api/main-categories/${id}/image`, { method: "POST", body: fd });
+      if (res.ok) onChange();
+    } finally {
+      setUploading(null);
+      e.target.value = "";
+    }
+  }
+
+  async function handleImageRemove(id: string) {
+    if (!confirm("Remove banner image for this main category?")) return;
+    setRemoving(id);
+    try {
+      await fetch(`/api/main-categories/${id}/image`, { method: "DELETE" });
+      onChange();
+    } finally { setRemoving(null); }
+  }
+
+  return (
+    <div className="flex h-full flex-col overflow-hidden">
+      <div className="flex-shrink-0 border-b border-sand/60 bg-white px-6 py-4">
+        <h1 className="font-serif text-xl text-ink">Main Categories</h1>
+        <p className="mt-0.5 text-xs text-espresso/50">
+          Top-level groupings shown on the homepage · sub-categories are assigned below
+        </p>
+      </div>
+
+      <div className="flex flex-1 flex-col overflow-hidden lg:flex-row">
+        {/* Left: Add / Edit form */}
+        <div className="flex-shrink-0 overflow-y-auto border-b border-sand/60 bg-white p-5 lg:w-72 lg:border-b-0 lg:border-r xl:w-80 lg:p-6">
+          <div className="mb-4 flex items-center justify-between">
+            <SectionLabel>{editing ? "Edit main category" : "New main category"}</SectionLabel>
+            {editing && (
+              <button onClick={cancelEdit} className="text-xs text-espresso/50 hover:text-clay">
+                ✕ Cancel
+              </button>
+            )}
+          </div>
+          <form onSubmit={handleSubmit} className="space-y-3.5">
+            <Field label="Name">
+              <input
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                placeholder="e.g. Living Room"
+                className="input"
+              />
+            </Field>
+            <Field label="Description">
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+                placeholder="Shown on the collection page when browsing this group."
+                className="input resize-none"
+              />
+            </Field>
+            {error && <p className="text-xs text-red-600">{error}</p>}
+            <button
+              type="submit"
+              disabled={busy}
+              className="w-full rounded-lg bg-clay py-2.5 text-sm text-white transition-colors hover:bg-espresso disabled:opacity-60"
+            >
+              {busy ? "Saving…" : editing ? "Save changes" : "Add main category"}
+            </button>
+          </form>
+        </div>
+
+        {/* Right: Main category list */}
+        <div className="flex-1 overflow-y-auto p-5 lg:p-6">
+          <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-espresso/50">
+            All main categories ({mainCategories.length})
+          </h2>
+          {mainCategories.length === 0 ? (
+            <EmptyState label="No main categories yet — add one to group your sub-categories." />
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              {mainCategories.map((m) => {
+                const subCount = categories.filter((c) => c.mainCategoryId === m.id).length;
+                return (
+                  <div
+                    key={m.id}
+                    className={`overflow-hidden rounded-2xl bg-white shadow-sm ring-1 transition-all ${
+                      editing?.id === m.id ? "ring-clay shadow-md" : "ring-sand/60"
+                    }`}
+                  >
+                    {/* Banner image */}
+                    <div className="relative aspect-[16/9] bg-sand">
+                      {m.imageUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={m.imageUrl} alt={m.name} className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="flex h-full flex-col items-center justify-center gap-1">
+                          <span className="text-2xl opacity-20">🗂</span>
+                          <span className="text-xs text-espresso/40">No banner</span>
+                        </div>
+                      )}
+                      <div className="absolute inset-0 flex flex-col justify-end bg-gradient-to-t from-black/60 to-transparent p-4">
+                        <p className="font-serif text-base font-semibold text-white drop-shadow">{m.name}</p>
+                        <p className="text-xs text-white/60">{subCount} sub-{subCount === 1 ? "category" : "categories"}</p>
+                      </div>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="p-3 space-y-2">
+                      <div className="flex gap-2">
+                        <label className={`flex flex-1 cursor-pointer items-center justify-center rounded-lg py-2 text-xs font-medium text-white transition-colors ${
+                          uploading === m.id ? "bg-clay/60" : "bg-clay hover:bg-espresso"
+                        }`}>
+                          {uploading === m.id ? "Uploading…" : m.imageUrl ? "Change banner" : "Upload banner"}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={(e) => handleImageUpload(m.id, e)}
+                            disabled={uploading === m.id}
+                            className="hidden"
+                          />
+                        </label>
+                        {m.imageUrl && (
+                          <button
+                            onClick={() => handleImageRemove(m.id)}
+                            disabled={removing === m.id}
+                            className="rounded-lg border border-sand px-3 py-2 text-xs text-red-500 transition-colors hover:bg-red-50 disabled:opacity-50"
+                          >
+                            {removing === m.id ? "…" : "Remove"}
+                          </button>
+                        )}
+                      </div>
+                      <div className="flex gap-3 text-xs pt-1">
+                        <button
+                          onClick={() => startEdit(m)}
+                          className="font-medium text-espresso hover:text-clay"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDelete(m)}
+                          disabled={deleting === m.id}
+                          className="text-red-500 hover:underline disabled:opacity-40"
+                        >
+                          {deleting === m.id ? "Deleting…" : "Delete"}
+                        </button>
+                      </div>
+                      {m.description && (
+                        <p className="text-xs text-espresso/50 line-clamp-2">{m.description}</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Categories section ───────────────────────────────────────────────────────
 
 function CategoriesSection({
+  mainCategories,
   categories,
   products,
   onChange,
 }: {
+  mainCategories: MainCategory[];
   categories: Category[];
   products: Product[];
   onChange: () => void;
@@ -849,6 +1102,7 @@ function CategoriesSection({
   const [editName, setEditName] = useState("");
   const [editDesc, setEditDesc] = useState("");
   const [saving, setSaving] = useState(false);
+  const [assigning, setAssigning] = useState<string | null>(null);
 
   async function addCategory(e: React.FormEvent) {
     e.preventDefault(); setError(""); setBusy(true);
@@ -892,17 +1146,29 @@ function CategoriesSection({
     onChange();
   }
 
+  async function assign(categoryId: string, mainCategoryId: string | null) {
+    setAssigning(categoryId);
+    try {
+      await fetch(`/api/categories/${categoryId}/assign`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mainCategoryId }),
+      });
+      onChange();
+    } finally { setAssigning(null); }
+  }
+
   return (
     <div className="flex h-full flex-col overflow-hidden">
       <div className="flex-shrink-0 border-b border-sand/60 bg-white px-6 py-4">
-        <h1 className="font-serif text-xl text-ink">Categories</h1>
-        <p className="mt-0.5 text-xs text-espresso/50">Organise how your collection is grouped on the website</p>
+        <h1 className="font-serif text-xl text-ink">Sub-categories</h1>
+        <p className="mt-0.5 text-xs text-espresso/50">Organise how your collection is grouped · assign each to a main category</p>
       </div>
 
       <div className="flex flex-1 flex-col overflow-hidden lg:flex-row">
         {/* Left: Add form */}
         <div className="flex-shrink-0 overflow-y-auto border-b border-sand/60 bg-white p-5 lg:w-72 lg:border-b-0 lg:border-r xl:w-80 lg:p-6">
-          <SectionLabel>New category</SectionLabel>
+          <SectionLabel>New sub-category</SectionLabel>
           <form onSubmit={addCategory} className="mt-4 space-y-3.5">
             <Field label="Name">
               <input value={name} onChange={(e) => setName(e.target.value)}
@@ -916,7 +1182,7 @@ function CategoriesSection({
             {error && <p className="text-xs text-red-600">{error}</p>}
             <button type="submit" disabled={busy}
               className="w-full rounded-lg bg-clay py-2.5 text-sm text-white transition-colors hover:bg-espresso disabled:opacity-60">
-              {busy ? "Adding…" : "Add category"}
+              {busy ? "Adding…" : "Add sub-category"}
             </button>
           </form>
         </div>
@@ -924,15 +1190,16 @@ function CategoriesSection({
         {/* Right: Category list with inline edit */}
         <div className="flex-1 overflow-y-auto p-5 lg:p-6">
           <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-espresso/50">
-            All categories ({categories.length})
+            All sub-categories ({categories.length})
           </h2>
           {categories.length === 0 ? (
-            <EmptyState label="No categories yet" />
+            <EmptyState label="No sub-categories yet" />
           ) : (
             <div className="space-y-2">
               {categories.map((c) => {
                 const count = products.filter((p) => p.categoryId === c.id).length;
                 const isEditing = editingId === c.id;
+                const parentName = mainCategories.find((m) => m.id === c.mainCategoryId)?.name;
 
                 return (
                   <div key={c.id}
@@ -975,26 +1242,48 @@ function CategoriesSection({
                         </div>
                       </div>
                     ) : (
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="min-w-0">
-                          <p className="truncate font-medium text-ink">{c.name}</p>
-                          {c.description && (
-                            <p className="mt-0.5 truncate text-xs text-espresso/50">{c.description}</p>
-                          )}
-                          <p className="mt-1 text-xs text-espresso/40">
-                            {count} {count === 1 ? "product" : "products"}
-                          </p>
+                      <div className="space-y-3">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="min-w-0">
+                            <p className="truncate font-medium text-ink">{c.name}</p>
+                            {c.description && (
+                              <p className="mt-0.5 truncate text-xs text-espresso/50">{c.description}</p>
+                            )}
+                            <p className="mt-1 text-xs text-espresso/40">
+                              {count} {count === 1 ? "product" : "products"}
+                              {parentName && <span className="ml-2 text-clay">· {parentName}</span>}
+                            </p>
+                          </div>
+                          <div className="flex shrink-0 gap-3 text-xs">
+                            <button onClick={() => startEdit(c)}
+                              className="font-medium text-espresso hover:text-clay">
+                              Edit
+                            </button>
+                            <button onClick={() => remove(c)}
+                              className="text-red-500 hover:underline">
+                              Delete
+                            </button>
+                          </div>
                         </div>
-                        <div className="flex shrink-0 gap-3 text-xs">
-                          <button onClick={() => startEdit(c)}
-                            className="font-medium text-espresso hover:text-clay">
-                            Edit
-                          </button>
-                          <button onClick={() => remove(c)}
-                            className="text-red-500 hover:underline">
-                            Delete
-                          </button>
-                        </div>
+                        {mainCategories.length > 0 && (
+                          <div className="flex items-center gap-2">
+                            <label className="text-xs text-espresso/50 shrink-0">Main category:</label>
+                            <select
+                              value={c.mainCategoryId ?? ""}
+                              onChange={(e) => assign(c.id, e.target.value || null)}
+                              disabled={assigning === c.id}
+                              className="flex-1 rounded-md border border-sand bg-[#f5f1ec] px-2 py-1 text-xs text-ink focus:border-clay focus:outline-none disabled:opacity-50"
+                            >
+                              <option value="">— None —</option>
+                              {mainCategories.map((m) => (
+                                <option key={m.id} value={m.id}>{m.name}</option>
+                              ))}
+                            </select>
+                            {assigning === c.id && (
+                              <span className="text-xs text-espresso/40">Saving…</span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>

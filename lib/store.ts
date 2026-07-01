@@ -4,6 +4,7 @@ import path from "path";
 import { randomUUID } from "crypto";
 import type {
   StoreData,
+  MainCategory,
   Category,
   Product,
   Project,
@@ -65,7 +66,8 @@ type LegacyProduct = Partial<Product> & { imageUrl?: string };
 
 function normalize(raw: unknown): StoreData {
   const data = (raw ?? {}) as {
-    categories?: Category[];
+    mainCategories?: Partial<MainCategory>[];
+    categories?: (Partial<Category> & { imageUrl?: string })[];
     products?: LegacyProduct[];
     projects?: Project[];
     messages?: Message[];
@@ -76,7 +78,21 @@ function normalize(raw: unknown): StoreData {
     reviews?: Partial<Review>[];
   };
   return {
-    categories: data.categories ?? [],
+    mainCategories: (data.mainCategories ?? []).map((mc) => ({
+      id: mc.id ?? randomUUID(),
+      name: mc.name ?? "",
+      slug: mc.slug ?? slugify(mc.name ?? ""),
+      description: mc.description ?? "",
+      imageUrl: mc.imageUrl,
+    })),
+    categories: (data.categories ?? []).map((c) => ({
+      id: c.id ?? randomUUID(),
+      mainCategoryId: c.mainCategoryId,
+      name: c.name ?? "",
+      slug: c.slug ?? slugify(c.name ?? ""),
+      description: c.description ?? "",
+      imageUrl: c.imageUrl,
+    })),
     products: (data.products ?? []).map((p) => ({
       id: p.id ?? randomUUID(),
       categoryId: p.categoryId ?? "",
@@ -219,7 +235,7 @@ async function deleteImages(urls: string[]): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
-// Categories
+// Shared slug helper
 // ---------------------------------------------------------------------------
 
 function slugify(value: string): string {
@@ -229,6 +245,101 @@ function slugify(value: string): string {
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 }
+
+// ---------------------------------------------------------------------------
+// Main Categories
+// ---------------------------------------------------------------------------
+
+export async function getMainCategories(): Promise<MainCategory[]> {
+  return (await readData()).mainCategories;
+}
+
+export async function addMainCategory(
+  name: string,
+  description: string
+): Promise<MainCategory> {
+  const data = await readData();
+  const base = slugify(name) || "category";
+  let slug = base;
+  let n = 1;
+  while (data.mainCategories.some((mc) => mc.slug === slug)) {
+    slug = `${base}-${++n}`;
+  }
+  const mainCategory: MainCategory = {
+    id: randomUUID(),
+    name: name.trim(),
+    slug,
+    description: description.trim(),
+  };
+  data.mainCategories.push(mainCategory);
+  await writeData(data);
+  return mainCategory;
+}
+
+export async function updateMainCategory(
+  id: string,
+  name: string,
+  description: string
+): Promise<void> {
+  const data = await readData();
+  const mc = data.mainCategories.find((m) => m.id === id);
+  if (!mc) return;
+  mc.name = name.trim();
+  mc.description = description.trim();
+  await writeData(data);
+}
+
+export async function deleteMainCategory(id: string): Promise<void> {
+  const data = await readData();
+  const mc = data.mainCategories.find((m) => m.id === id);
+  if (mc?.imageUrl) await deleteImage(mc.imageUrl);
+  // Unlink sub-categories (don't delete them)
+  data.categories.forEach((c) => {
+    if (c.mainCategoryId === id) delete c.mainCategoryId;
+  });
+  data.mainCategories = data.mainCategories.filter((m) => m.id !== id);
+  await writeData(data);
+}
+
+export async function setMainCategoryImage(
+  id: string,
+  imageUrl: string
+): Promise<void> {
+  const data = await readData();
+  const mc = data.mainCategories.find((m) => m.id === id);
+  if (!mc) return;
+  if (mc.imageUrl) await deleteImage(mc.imageUrl);
+  mc.imageUrl = imageUrl;
+  await writeData(data);
+}
+
+export async function removeMainCategoryImage(id: string): Promise<void> {
+  const data = await readData();
+  const mc = data.mainCategories.find((m) => m.id === id);
+  if (!mc) return;
+  if (mc.imageUrl) await deleteImage(mc.imageUrl);
+  delete mc.imageUrl;
+  await writeData(data);
+}
+
+export async function assignSubCategory(
+  categoryId: string,
+  mainCategoryId: string | null
+): Promise<void> {
+  const data = await readData();
+  const cat = data.categories.find((c) => c.id === categoryId);
+  if (!cat) return;
+  if (mainCategoryId) {
+    cat.mainCategoryId = mainCategoryId;
+  } else {
+    delete cat.mainCategoryId;
+  }
+  await writeData(data);
+}
+
+// ---------------------------------------------------------------------------
+// Sub Categories
+// ---------------------------------------------------------------------------
 
 export async function getCategories(): Promise<Category[]> {
   return (await readData()).categories;
