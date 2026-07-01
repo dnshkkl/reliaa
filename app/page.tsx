@@ -3,6 +3,7 @@ import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
 import HeroSlideshow from "@/components/HeroSlideshow";
 import Reveal from "@/components/Reveal";
+import AchievementsCarousel from "@/components/AchievementsCarousel";
 import {
   getAchievementSlides,
   getCategories,
@@ -168,10 +169,10 @@ export default async function HomePage() {
 
         {/* ── 4. Achievements ──────────────────────────────────────────── */}
         {achievementSlides.length > 0 && (
-          <section className="py-14 md:py-20">
+          <section className="py-12 md:py-16">
             <div className="mx-auto max-w-6xl px-5 md:px-6">
               <Reveal>
-                <div className="flex items-end justify-between">
+                <div className="mb-8 flex items-end justify-between md:mb-10">
                   <div>
                     <span className="text-xs uppercase tracking-[0.3em] text-clay sm:text-sm">
                       Milestones
@@ -180,22 +181,14 @@ export default async function HomePage() {
                       Our Achievements
                     </h2>
                   </div>
+                  <span className="hidden text-sm text-espresso/50 md:block">
+                    {achievementSlides.length} highlights
+                  </span>
                 </div>
               </Reveal>
 
-              <div className="mt-8 grid gap-4 sm:grid-cols-2 md:mt-10 md:gap-5 lg:grid-cols-3">
-                {achievementSlides.map((url, i) => (
-                  <Reveal key={url} delay={(i % 3) * 80}>
-                    <div className="overflow-hidden rounded-2xl shadow-sm ring-1 ring-sand/60">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={url}
-                        alt={`Achievement ${i + 1}`}
-                        className="aspect-[4/3] w-full object-cover transition-transform duration-500 hover:scale-105"
-                      />
-                    </div>
-                  </Reveal>
-                ))}
+              <div className="px-5 sm:px-6">
+                <AchievementsCarousel images={achievementSlides} />
               </div>
             </div>
           </section>
