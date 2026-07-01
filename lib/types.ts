@@ -57,5 +57,6 @@ export interface StoreData {
   messages: Message[];
   heroSlides: string[];
   whyChooseImageUrl: string;
+  achievementSlides: string[];
   reviews: Review[];
 }

@@ -4,6 +4,7 @@ import SiteFooter from "@/components/SiteFooter";
 import HeroSlideshow from "@/components/HeroSlideshow";
 import Reveal from "@/components/Reveal";
 import {
+  getAchievementSlides,
   getCategories,
   getHeroSlides,
   getProducts,
@@ -15,13 +16,14 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [categories, products, projects, heroSlides, whyChooseImageUrl, reviews] =
+  const [categories, products, projects, heroSlides, whyChooseImageUrl, achievementSlides, reviews] =
     await Promise.all([
       getCategories(),
       getProducts(),
       getProjects(),
       getHeroSlides(),
       getWhyChooseImageUrl(),
+      getAchievementSlides(),
       getReviews(),
     ]);
 
@@ -164,7 +166,42 @@ export default async function HomePage() {
           </div>
         </section>
 
-        {/* ── 4. Client Reviews ────────────────────────────────────────── */}
+        {/* ── 4. Achievements ──────────────────────────────────────────── */}
+        {achievementSlides.length > 0 && (
+          <section className="py-14 md:py-20">
+            <div className="mx-auto max-w-6xl px-5 md:px-6">
+              <Reveal>
+                <div className="flex items-end justify-between">
+                  <div>
+                    <span className="text-xs uppercase tracking-[0.3em] text-clay sm:text-sm">
+                      Milestones
+                    </span>
+                    <h2 className="mt-2 font-serif text-3xl text-ink md:mt-3 md:text-4xl">
+                      Our Achievements
+                    </h2>
+                  </div>
+                </div>
+              </Reveal>
+
+              <div className="mt-8 grid gap-4 sm:grid-cols-2 md:mt-10 md:gap-5 lg:grid-cols-3">
+                {achievementSlides.map((url, i) => (
+                  <Reveal key={url} delay={(i % 3) * 80}>
+                    <div className="overflow-hidden rounded-2xl shadow-sm ring-1 ring-sand/60">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={url}
+                        alt={`Achievement ${i + 1}`}
+                        className="aspect-[4/3] w-full object-cover transition-transform duration-500 hover:scale-105"
+                      />
+                    </div>
+                  </Reveal>
+                ))}
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ── 5. Client Reviews ────────────────────────────────────────── */}
         {reviews.length > 0 && (
           <section className="py-14 md:py-20">
             <div className="mx-auto max-w-6xl px-5 md:px-6">

@@ -1,5 +1,6 @@
 import AdminDashboard from "@/components/AdminDashboard";
 import {
+  getAchievementSlides,
   getCategories,
   getHeroSlides,
   getMessages,
@@ -12,7 +13,7 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const [categories, products, projects, messages, heroSlides, whyChooseImageUrl, reviews] =
+  const [categories, products, projects, messages, heroSlides, whyChooseImageUrl, achievementSlides, reviews] =
     await Promise.all([
       getCategories(),
       getProducts(),
@@ -20,6 +21,7 @@ export default async function AdminPage() {
       getMessages(),
       getHeroSlides(),
       getWhyChooseImageUrl(),
+      getAchievementSlides(),
       getReviews(),
     ]);
 
@@ -31,6 +33,7 @@ export default async function AdminPage() {
       messages={messages}
       heroSlides={heroSlides}
       whyChooseImageUrl={whyChooseImageUrl}
+      achievementSlides={achievementSlides}
       reviews={reviews}
     />
   );

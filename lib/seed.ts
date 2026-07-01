@@ -31,5 +31,6 @@ export const seedData: StoreData = {
   messages: [],
   heroSlides: [],
   whyChooseImageUrl: "",
+  achievementSlides: [],
   reviews: [],
 };

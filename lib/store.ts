@@ -71,6 +71,7 @@ function normalize(raw: unknown): StoreData {
     messages?: Message[];
     heroSlides?: string[];
     whyChooseImageUrl?: string;
+    achievementSlides?: string[];
     reviews?: Partial<Review>[];
   };
   return {
@@ -92,6 +93,7 @@ function normalize(raw: unknown): StoreData {
     messages: data.messages ?? [],
     heroSlides: data.heroSlides ?? [],
     whyChooseImageUrl: data.whyChooseImageUrl ?? "",
+    achievementSlides: data.achievementSlides ?? [],
     reviews: (data.reviews ?? []).map((r) => ({
       id: r.id ?? randomUUID(),
       clientName: r.clientName ?? "",
@@ -485,6 +487,27 @@ export async function removeHeroSlide(imageUrl: string): Promise<void> {
   const data = await readData();
   await deleteImage(imageUrl);
   data.heroSlides = data.heroSlides.filter((s) => s !== imageUrl);
+  await writeData(data);
+}
+
+// ---------------------------------------------------------------------------
+// Achievement Slides
+// ---------------------------------------------------------------------------
+
+export async function getAchievementSlides(): Promise<string[]> {
+  return (await readData()).achievementSlides;
+}
+
+export async function addAchievementSlide(imageUrl: string): Promise<void> {
+  const data = await readData();
+  data.achievementSlides.push(imageUrl);
+  await writeData(data);
+}
+
+export async function removeAchievementSlide(imageUrl: string): Promise<void> {
+  const data = await readData();
+  await deleteImage(imageUrl);
+  data.achievementSlides = data.achievementSlides.filter((s) => s !== imageUrl);
   await writeData(data);
 }
 
