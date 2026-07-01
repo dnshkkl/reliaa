@@ -2,7 +2,13 @@
 
 import { useRef, useState, useEffect } from "react";
 
-export default function AchievementsCarousel({ images }: { images: string[] }) {
+export default function AchievementsCarousel({
+  images,
+  size = "default",
+}: {
+  images: string[];
+  size?: "default" | "large";
+}) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [canPrev, setCanPrev] = useState(false);
   const [canNext, setCanNext] = useState(true);
@@ -54,7 +60,10 @@ export default function AchievementsCarousel({ images }: { images: string[] }) {
           <div
             key={url}
             className="flex-shrink-0 overflow-hidden rounded-2xl shadow-sm ring-1 ring-sand/60"
-            style={{ scrollSnapAlign: "start", width: "clamp(220px, 28vw, 320px)" }}
+            style={{
+              scrollSnapAlign: "start",
+              width: size === "large" ? "clamp(300px, 45vw, 520px)" : "clamp(220px, 28vw, 320px)",
+            }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img

@@ -190,7 +190,7 @@ export default async function HomePage() {
               </Reveal>
 
               <div className="px-5 sm:px-6">
-                <AchievementsCarousel images={achievementSlides} />
+                <AchievementsCarousel images={achievementSlides} size="large" />
               </div>
             </div>
           </section>
