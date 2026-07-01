@@ -216,8 +216,19 @@ export default async function HomePage() {
                 </div>
               </Reveal>
 
-              <div className="px-5 sm:px-6">
-                <AchievementsCarousel images={clientSlides} />
+              <div className="grid gap-5 sm:grid-cols-2 md:gap-6">
+                {clientSlides.map((url, i) => (
+                  <Reveal key={url} delay={(i % 2) * 80}>
+                    <div className="overflow-hidden rounded-2xl shadow-sm ring-1 ring-sand/60">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={url}
+                        alt={`Client ${i + 1}`}
+                        className="aspect-[4/3] w-full object-cover transition-transform duration-500 hover:scale-105"
+                      />
+                    </div>
+                  </Reveal>
+                ))}
               </div>
             </div>
           </section>
