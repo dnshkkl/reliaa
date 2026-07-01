@@ -62,7 +62,7 @@ export default function AchievementsCarousel({
             className="flex-shrink-0 overflow-hidden rounded-2xl shadow-sm ring-1 ring-sand/60"
             style={{
               scrollSnapAlign: "start",
-              width: size === "large" ? "clamp(300px, 45vw, 520px)" : "clamp(220px, 28vw, 320px)",
+              width: size === "large" ? "clamp(380px, 62vw, 700px)" : "clamp(220px, 28vw, 320px)",
             }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
