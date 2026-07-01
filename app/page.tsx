@@ -70,71 +70,16 @@ export default async function HomePage() {
         </section>
 
         {/* ── 2. Why Choose Reliaa ─────────────────────────────────────── */}
-        <section>
-          {/* Top photo — shown only when uploaded */}
-          {whyChooseImageUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
+        {whyChooseImageUrl && (
+          <section>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={whyChooseImageUrl}
-              alt="Reliaa Furniture"
+              alt="Why Choose Reliaa"
               className="block w-full object-cover"
             />
-          )}
-
-          {/* Why Choose text block — warm brown wooden background */}
-          <div
-            className="px-5 py-14 md:px-8 md:py-20"
-            style={{
-              background:
-                "linear-gradient(135deg, #3B1A08 0%, #5C2A0A 30%, #7A3A12 55%, #3B1A08 80%, #1E0D04 100%)",
-            }}
-          >
-            <div className="mx-auto max-w-5xl">
-              {/* Heading */}
-              <h2 className="text-center font-serif text-3xl text-white md:text-4xl lg:text-5xl">
-                Why Choose{" "}
-                <span className="font-bold">Reliaa Furniture?</span>
-              </h2>
-
-              {/* Points */}
-              <div className="mt-10 grid gap-5 sm:grid-cols-2 md:mt-14">
-                {[
-                  { title: "Trusted Since 2000", body: "Over 25 years of experience in delivering quality furniture and event solutions." },
-                  { title: "Wide Product Range", body: "Chairs, sofas, tables, stools, banquet furniture, and event truss — all under one roof." },
-                  { title: "Premium Quality", body: "Built with durable materials for long-lasting performance and elegant design." },
-                  { title: "Custom Solutions", body: "Furniture tailored to match your venue, event, or business requirements." },
-                  { title: "Competitive Pricing", body: "Factory-direct value without compromising on quality." },
-                  { title: "Trusted by Professionals", body: "Preferred by hotels, resorts, banquet halls, marriage lawns, restaurants, and event managers." },
-                  { title: "Reliable Service", body: "On-time delivery, responsive support, and customer satisfaction are our priority." },
-                ].map((point) => (
-                  <div key={point.title} className="flex items-start gap-3">
-                    <svg
-                      className="mt-1 h-5 w-5 flex-shrink-0 text-white"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    <p className="text-sm leading-relaxed text-white/90 md:text-base">
-                      <span className="font-bold text-white">{point.title}</span>
-                      {" – "}
-                      {point.body}
-                    </p>
-                  </div>
-                ))}
-              </div>
-
-              {/* Tagline */}
-              <p className="mt-12 text-center text-sm font-bold tracking-wide text-white md:text-base">
-                Reliaa Furniture – Quality You Can Trust. Comfort You Can Feel.
-              </p>
-            </div>
-          </div>
-        </section>
+          </section>
+        )}
 
         {/* ── 3. Categories ────────────────────────────────────────────── */}
         <section id="categories" className="bg-white py-14 md:py-20">
