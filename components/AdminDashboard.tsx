@@ -1510,9 +1510,9 @@ function ReviewsSection({
         </p>
       </div>
 
-      <div className="flex h-full min-h-0 flex-1">
+      <div className="flex h-full min-h-0 flex-1 flex-col lg:flex-row">
         {/* Form panel */}
-        <div className="w-full flex-shrink-0 overflow-y-auto border-b border-sand/60 p-5 lg:w-80 lg:border-b-0 lg:border-r lg:p-6 xl:w-96">
+        <div className="flex-shrink-0 overflow-y-auto border-b border-sand/60 p-5 lg:w-80 lg:border-b-0 lg:border-r lg:p-6 xl:w-96">
           <SectionLabel>{editing ? "Edit review" : "Add review"}</SectionLabel>
           {editing && (
             <button onClick={cancelEdit} className="mt-1 text-xs text-espresso/50 hover:text-clay">✕ Cancel edit</button>
