@@ -58,5 +58,6 @@ export interface StoreData {
   heroSlides: string[];
   whyChooseImageUrl: string;
   achievementSlides: string[];
+  clientSlides: string[];
   reviews: Review[];
 }

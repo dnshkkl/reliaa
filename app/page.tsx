@@ -7,6 +7,7 @@ import AchievementsCarousel from "@/components/AchievementsCarousel";
 import {
   getAchievementSlides,
   getCategories,
+  getClientSlides,
   getHeroSlides,
   getProducts,
   getProjects,
@@ -17,7 +18,7 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [categories, products, projects, heroSlides, whyChooseImageUrl, achievementSlides, reviews] =
+  const [categories, products, projects, heroSlides, whyChooseImageUrl, achievementSlides, clientSlides, reviews] =
     await Promise.all([
       getCategories(),
       getProducts(),
@@ -25,6 +26,7 @@ export default async function HomePage() {
       getHeroSlides(),
       getWhyChooseImageUrl(),
       getAchievementSlides(),
+      getClientSlides(),
       getReviews(),
     ]);
 
@@ -194,7 +196,34 @@ export default async function HomePage() {
           </section>
         )}
 
-        {/* ── 5. Client Reviews ────────────────────────────────────────── */}
+        {/* ── 5. Our Clients ───────────────────────────────────────────── */}
+        {clientSlides.length > 0 && (
+          <section className="bg-white py-12 md:py-16">
+            <div className="mx-auto max-w-6xl px-5 md:px-6">
+              <Reveal>
+                <div className="mb-8 flex items-end justify-between md:mb-10">
+                  <div>
+                    <span className="text-xs uppercase tracking-[0.3em] text-clay sm:text-sm">
+                      Trusted By
+                    </span>
+                    <h2 className="mt-2 font-serif text-3xl text-ink md:mt-3 md:text-4xl">
+                      Our Clients
+                    </h2>
+                  </div>
+                  <span className="hidden text-sm text-espresso/50 md:block">
+                    {clientSlides.length} clients
+                  </span>
+                </div>
+              </Reveal>
+
+              <div className="px-5 sm:px-6">
+                <AchievementsCarousel images={clientSlides} />
+              </div>
+            </div>
+          </section>
+        )}
+
+        {/* ── 6. Client Reviews ────────────────────────────────────────── */}
         {reviews.length > 0 && (
           <section className="py-14 md:py-20">
             <div className="mx-auto max-w-6xl px-5 md:px-6">

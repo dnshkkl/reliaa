@@ -32,5 +32,6 @@ export const seedData: StoreData = {
   heroSlides: [],
   whyChooseImageUrl: "",
   achievementSlides: [],
+  clientSlides: [],
   reviews: [],
 };

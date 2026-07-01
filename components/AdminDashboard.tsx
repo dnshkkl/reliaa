@@ -6,7 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import type { Category, Message, Product, Project, Review } from "@/lib/types";
 
-type Section = "products" | "projects" | "categories" | "banners" | "hero-slides" | "why-choose" | "achievements" | "reviews" | "inbox";
+type Section = "products" | "projects" | "categories" | "banners" | "hero-slides" | "why-choose" | "achievements" | "clients" | "reviews" | "inbox";
 
 // ─── Icons ───────────────────────────────────────────────────────────────────
 
@@ -109,6 +109,7 @@ export default function AdminDashboard({
   heroSlides,
   whyChooseImageUrl,
   achievementSlides,
+  clientSlides,
   reviews,
 }: {
   categories: Category[];
@@ -118,6 +119,7 @@ export default function AdminDashboard({
   heroSlides: string[];
   whyChooseImageUrl: string;
   achievementSlides: string[];
+  clientSlides: string[];
   reviews: Review[];
 }) {
   const router = useRouter();
@@ -146,6 +148,7 @@ export default function AdminDashboard({
     { id: "hero-slides", label: "Hero Slideshow",   icon: <IcSlides />, count: heroSlides.length },
     { id: "why-choose",   label: "Why Choose",      icon: <IcCheck />,  count: whyChooseImageUrl ? 1 : 0 },
     { id: "achievements", label: "Achievements",    icon: <IcSlides />, count: achievementSlides.length },
+    { id: "clients",      label: "Our Clients",     icon: <IcSlides />, count: clientSlides.length },
     { id: "reviews",      label: "Reviews",         icon: <IcStar />,   count: reviews.length    },
     { id: "inbox",       label: "Inbox",            icon: <IcMail />,   badge: unread            },
   ];
@@ -246,6 +249,9 @@ export default function AdminDashboard({
           )}
           {section === "achievements" && (
             <AchievementsSection slides={achievementSlides} onChange={refresh} />
+          )}
+          {section === "clients" && (
+            <ClientsSection slides={clientSlides} onChange={refresh} />
           )}
           {section === "reviews" && (
             <ReviewsSection reviews={reviews} onChange={refresh} />
@@ -1429,6 +1435,99 @@ function AchievementsSection({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M12 4v16m8-8H4" />
           </svg>
           {uploading ? "Uploading…" : "Add achievement image"}
+          <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} className="hidden" />
+        </label>
+        <p className="mt-2 text-center text-[10px] text-espresso/40">JPG, PNG, WebP · 8 MB max</p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Clients section ──────────────────────────────────────────────────────────
+
+function ClientsSection({
+  slides,
+  onChange,
+}: {
+  slides: string[];
+  onChange: () => void;
+}) {
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+
+  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setError("");
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append("image", file);
+      const res = await fetch("/api/client-slides", { method: "POST", body: fd });
+      if (!res.ok) {
+        setError(((await res.json().catch(() => ({}))).error) || "Upload failed.");
+      } else {
+        onChange();
+      }
+    } finally {
+      setUploading(false);
+      e.target.value = "";
+    }
+  }
+
+  async function handleRemove(url: string) {
+    if (!confirm("Remove this client image?")) return;
+    await fetch("/api/client-slides", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    });
+    onChange();
+  }
+
+  return (
+    <div className="flex h-full flex-col overflow-hidden">
+      <div className="flex-shrink-0 border-b border-sand/60 bg-white px-6 py-4">
+        <h1 className="font-serif text-xl text-ink">Our Clients</h1>
+        <p className="mt-0.5 text-xs text-espresso/50">
+          Images shown in the &ldquo;Our Clients&rdquo; carousel on the homepage, right below the Achievements section.
+        </p>
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-5 lg:p-6">
+        {error && <p className="mb-4 rounded-lg bg-red-50 px-4 py-2 text-xs text-red-600">{error}</p>}
+
+        {slides.length === 0 ? (
+          <EmptyState label="No client images yet. Upload images below to show this section on the homepage." />
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {slides.map((url, i) => (
+              <div key={url} className="group relative overflow-hidden rounded-2xl bg-sand shadow-sm ring-1 ring-sand/60">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={url} alt={`Client ${i + 1}`} className="aspect-[4/3] w-full object-cover" />
+                <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/40">
+                  <button
+                    onClick={() => handleRemove(url)}
+                    className="scale-75 rounded-full bg-red-500 px-4 py-2 text-xs font-medium text-white opacity-0 transition-all group-hover:scale-100 group-hover:opacity-100"
+                  >
+                    Remove
+                  </button>
+                </div>
+                <div className="absolute left-2 top-2 rounded-full bg-black/40 px-2 py-0.5 text-[10px] text-white">
+                  {i + 1}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        <label className={`mt-5 flex cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed py-5 text-sm transition-colors ${
+          uploading ? "border-clay bg-clay/5 text-clay" : "border-sand bg-white text-espresso/60 hover:border-clay hover:text-clay"
+        }`}>
+          <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M12 4v16m8-8H4" />
+          </svg>
+          {uploading ? "Uploading…" : "Add client image"}
           <input type="file" accept="image/*" onChange={handleUpload} disabled={uploading} className="hidden" />
         </label>
         <p className="mt-2 text-center text-[10px] text-espresso/40">JPG, PNG, WebP · 8 MB max</p>
