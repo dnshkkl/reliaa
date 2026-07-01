@@ -210,9 +210,6 @@ export default async function HomePage() {
                       Our Clients
                     </h2>
                   </div>
-                  <span className="hidden text-sm text-espresso/50 md:block">
-                    {clientSlides.length} clients
-                  </span>
                 </div>
               </Reveal>
 
