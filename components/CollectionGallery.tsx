@@ -15,12 +15,14 @@ export default function CollectionGallery({
 }) {
   const [active, setActive] = useState(initialCategory);
 
+  const categoryIds = useMemo(() => new Set(categories.map((c) => c.id)), [categories]);
+
   const filtered = useMemo(() => {
-    if (active === "all") return products;
+    if (active === "all") return products.filter((p) => categoryIds.has(p.categoryId));
     const cat = categories.find((c) => c.slug === active);
-    if (!cat) return products;
+    if (!cat) return products.filter((p) => categoryIds.has(p.categoryId));
     return products.filter((p) => p.categoryId === cat.id);
-  }, [active, products, categories]);
+  }, [active, products, categories, categoryIds]);
 
   const categoryName = (id: string) =>
     categories.find((c) => c.id === id)?.name ?? "";
