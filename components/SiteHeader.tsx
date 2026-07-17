@@ -60,7 +60,7 @@ function ReliaaLogo({ mobile }: { mobile?: boolean }) {
   const iW = Math.round(iImgH * (1426 / 1504) * 0.8); // visible width (centre 80%)
 
   return (
-    <span className="flex items-center gap-2 md:gap-3">
+    <span className="flex items-center gap-1">
       {/* Chair icon */}
       <span className="relative block flex-shrink-0 overflow-hidden" style={{ width: iW, height: iH }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
