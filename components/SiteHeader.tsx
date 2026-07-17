@@ -77,7 +77,7 @@ function ReliaaLogo({ mobile }: { mobile?: boolean }) {
       <img
         src="/reliaa-wordmark.png"
         alt="Reliaa — Innovation With Style"
-        style={{ height: wH, width: "auto", display: "block", marginLeft: "-12px" }}
+        style={{ height: wH, width: "auto", display: "block", marginLeft: "-22px" }}
       />
     </span>
   );
