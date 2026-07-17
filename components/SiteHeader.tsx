@@ -54,8 +54,8 @@ function IcClose() {
 
 function ReliaaLogo({ mobile }: { mobile?: boolean }) {
   // logo.png: 1426×1504 — chair in top ~50%, so render at 2× height and clip
-  const wH = mobile ? 40 : 53;   // wordmark height
-  const iH = mobile ? 22 : 29;   // icon container height (slightly taller for visual balance)
+  const wH = mobile ? 46 : 62;   // wordmark height
+  const iH = mobile ? 26 : 34;   // icon container height (slightly taller for visual balance)
   const iImgH = iH * 2;          // render logo.png at 2× so container clips to chair only
   const iW = Math.round(iImgH * (1426 / 1504) * 0.8); // visible width (centre 80%)
 
@@ -77,7 +77,7 @@ function ReliaaLogo({ mobile }: { mobile?: boolean }) {
       <img
         src="/reliaa-wordmark.png"
         alt="Reliaa — Innovation With Style"
-        style={{ height: wH, width: "auto", display: "block", marginLeft: "-6px" }}
+        style={{ height: wH, width: "auto", display: "block", marginLeft: "-12px" }}
       />
     </span>
   );
