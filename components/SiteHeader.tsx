@@ -54,8 +54,8 @@ function IcClose() {
 
 function ReliaaLogo({ mobile }: { mobile?: boolean }) {
   // logo.png: 1426×1504 — chair in top ~50%, so render at 2× height and clip
-  const wH = mobile ? 36 : 48;   // wordmark height
-  const iH = mobile ? 20 : 26;   // icon container height (slightly taller for visual balance)
+  const wH = mobile ? 40 : 53;   // wordmark height
+  const iH = mobile ? 22 : 29;   // icon container height (slightly taller for visual balance)
   const iImgH = iH * 2;          // render logo.png at 2× so container clips to chair only
   const iW = Math.round(iImgH * (1426 / 1504) * 0.8); // visible width (centre 80%)
 
