@@ -32,27 +32,37 @@ export default async function ContactPage({
             <div className="mt-8 space-y-5 text-espresso/80 md:mt-10 md:space-y-6">
               <div>
                 <h3 className="text-sm font-semibold uppercase tracking-widest text-clay">
-                  Showroom
+                  Factory &amp; Showroom
                 </h3>
                 <p className="mt-2 leading-relaxed">
-                  Reliaa Showroom
+                  214 Karmi Bijlamau
                   <br />
-                  123 Design Avenue
+                  Kanpur Lucknow Highway, Next to Avon Dhaba
                   <br />
-                  Your City, 00000
+                  Unnao – 209862, Uttar Pradesh, India
                 </p>
               </div>
               <div>
                 <h3 className="text-sm font-semibold uppercase tracking-widest text-clay">
-                  Reach us
+                  Phone
                 </h3>
                 <p className="mt-2 leading-relaxed">
-                  <a href="tel:+10000000000" className="hover:text-clay">
-                    +1 (000) 000-0000
+                  <a href="tel:+919235031737" className="hover:text-clay">
+                    +91 92350 31737
                   </a>
                   <br />
-                  <a href="mailto:hello@reliaa.com" className="hover:text-clay">
-                    hello@reliaa.com
+                  <a href="tel:+918318734783" className="hover:text-clay">
+                    +91 83187 34783
+                  </a>
+                </p>
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold uppercase tracking-widest text-clay">
+                  Email
+                </h3>
+                <p className="mt-2">
+                  <a href="mailto:reliaafurniture@gmail.com" className="hover:text-clay">
+                    reliaafurniture@gmail.com
                   </a>
                 </p>
               </div>
