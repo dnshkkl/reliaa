@@ -1,99 +1,225 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
-const links = [
+const leftLinks = [
   { href: "/", label: "Home" },
   { href: "/collection", label: "Collection" },
+];
+
+const rightLinks = [
   { href: "/projects", label: "Projects" },
   { href: "/contact", label: "Contact" },
 ];
+
+const allLinks = [...leftLinks, ...rightLinks];
+
+function IcSearch() {
+  return (
+    <svg className="h-[21px] w-[21px]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.6}>
+      <circle cx="11" cy="11" r="7" />
+      <path strokeLinecap="round" d="M16.5 16.5l4 4" />
+    </svg>
+  );
+}
+
+function IcBag() {
+  return (
+    <svg className="h-[21px] w-[21px]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.6}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+      <line x1="3" y1="6" x2="21" y2="6" strokeLinecap="round" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16 10a4 4 0 01-8 0" />
+    </svg>
+  );
+}
+
+function IcHamburger() {
+  return (
+    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75}>
+      <path strokeLinecap="round" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  );
+}
+
+function IcClose() {
+  return (
+    <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={1.75}>
+      <path strokeLinecap="round" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  );
+}
+
+/*
+ * Logo: logo.png is 1426×1504 (portrait, nearly square) with the
+ * chair icon in the top ~57% and "Reliaa / Innovation With Style" below.
+ * We clip to just the chair icon by rendering the image taller than the
+ * container and cutting off the bottom with overflow:hidden.
+ *
+ * Then we render "Reliaa" in the LonghandLP script font next to it,
+ * mirroring the Geeken-style icon + wordmark horizontal layout.
+ */
+function ReliaaLogo({ mobile }: { mobile?: boolean }) {
+  // Container size — the visible square for the chair icon
+  const iconSize = mobile ? 50 : 62;
+  // Render the image taller so only the top ~57% (the chair) is visible
+  const imgHeight = Math.round(iconSize / 0.57);
+  // Font size for "Reliaa" wordmark
+  const fontSize = mobile ? "1.85rem" : "2.4rem";
+
+  return (
+    <span className="flex items-center gap-2.5 md:gap-3">
+      {/* Chair icon — overflow-hidden crops the text portion of logo.png */}
+      <span
+        className="relative block flex-shrink-0 overflow-hidden"
+        style={{ width: iconSize, height: iconSize }}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/logo.png"
+          alt=""
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            top: 0,
+            left: "50%",
+            transform: "translateX(-50%)",
+            height: imgHeight,
+            width: "auto",
+          }}
+        />
+      </span>
+
+      {/* Wordmark */}
+      <span className="flex flex-col leading-none">
+        <span
+          style={{
+            fontFamily: "var(--font-script)",
+            fontSize,
+            color: "#D97329",
+            lineHeight: 1,
+            display: "block",
+          }}
+        >
+          Reliaa
+        </span>
+        <span
+          style={{
+            fontSize: mobile ? "8px" : "9px",
+            letterSpacing: "0.3em",
+            textTransform: "uppercase",
+            color: "rgba(92,42,10,0.4)",
+            marginTop: "4px",
+            display: "block",
+          }}
+        >
+          Furniture
+        </span>
+      </span>
+    </span>
+  );
+}
 
 export default function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
+  function isActive(href: string) {
+    return href === pathname || (href !== "/" && pathname.startsWith(href));
+  }
+
+  const navLinkClass = (href: string) =>
+    `text-xs font-medium tracking-[0.15em] uppercase transition-colors hover:text-clay ${
+      isActive(href) ? "text-clay" : "text-espresso/60"
+    }`;
+
   return (
-    <header className="sticky top-0 z-50 border-b border-sand/70 bg-cream/90 backdrop-blur">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-2 md:px-6 md:py-2">
-        {/* Logo */}
-        <Link href="/" className="flex items-center">
-          <Image
-            src="/logo.png"
-            alt="Reliaa"
-            width={56}
-            height={72}
-            className="h-14 w-auto object-contain"
-            priority
-          />
+    <header className="sticky top-0 z-50 border-b border-neutral-100 bg-white">
+      {/* ── Main bar — 3-column grid ─────────────────────────── */}
+      <div
+        className="mx-auto grid max-w-7xl grid-cols-[1fr_auto_1fr] items-center px-5 md:px-10"
+        style={{ height: "clamp(72px, 9vw, 96px)" }}
+      >
+        {/* LEFT: hamburger (mobile) | nav links (desktop) */}
+        <div className="flex items-center gap-7">
+          <nav className="hidden md:flex items-center gap-7">
+            {leftLinks.map(({ href, label }) => (
+              <Link key={href} href={href} className={navLinkClass(href)}>
+                {label}
+              </Link>
+            ))}
+          </nav>
+          <button
+            type="button"
+            aria-label={open ? "Close menu" : "Open menu"}
+            onClick={() => setOpen((v) => !v)}
+            className="flex h-10 w-10 items-center justify-center text-espresso/70 hover:text-clay md:hidden"
+          >
+            {open ? <IcClose /> : <IcHamburger />}
+          </button>
+        </div>
+
+        {/* CENTER: Geeken-style icon + wordmark logo */}
+        <Link href="/" aria-label="Reliaa — Home" className="flex justify-center px-4 md:px-6">
+          {/* Desktop logo */}
+          <span className="hidden md:flex">
+            <ReliaaLogo />
+          </span>
+          {/* Mobile logo */}
+          <span className="flex md:hidden">
+            <ReliaaLogo mobile />
+          </span>
         </Link>
 
-        {/* Desktop nav */}
-        <nav className="hidden items-center gap-6 md:flex lg:gap-8">
-          {links.map((link) => {
-            const active =
-              link.href === pathname ||
-              (link.href !== "/" && pathname.startsWith(link.href));
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`text-sm tracking-wide transition-colors hover:text-clay ${
-                  active ? "text-clay" : "text-espresso"
-                }`}
-              >
-                {link.label}
+        {/* RIGHT: nav links (desktop) + icons */}
+        <div className="flex items-center justify-end gap-5 md:gap-6">
+          <nav className="hidden md:flex items-center gap-7">
+            {rightLinks.map(({ href, label }) => (
+              <Link key={href} href={href} className={navLinkClass(href)}>
+                {label}
               </Link>
-            );
-          })}
+            ))}
+          </nav>
+          <span className="hidden h-4 w-px bg-neutral-200 md:block" />
           <Link
             href="/collection"
-            className="rounded-full bg-clay px-5 py-2 text-sm text-white transition-colors hover:bg-espresso"
+            aria-label="Browse collection"
+            className="flex h-10 w-10 items-center justify-center text-espresso/60 transition-colors hover:text-clay"
           >
-            View Collection
+            <IcSearch />
           </Link>
-        </nav>
-
-        {/* Mobile hamburger */}
-        <button
-          type="button"
-          aria-label="Toggle menu"
-          onClick={() => setOpen((v) => !v)}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-sand md:hidden"
-        >
-          <span className="text-base leading-none">{open ? "✕" : "☰"}</span>
-        </button>
+          <Link
+            href="/contact"
+            aria-label="Enquire"
+            className="flex h-10 w-10 items-center justify-center text-espresso/60 transition-colors hover:text-clay"
+          >
+            <IcBag />
+          </Link>
+        </div>
       </div>
 
-      {/* Mobile drawer */}
+      {/* ── Mobile drawer ────────────────────────────────────── */}
       {open && (
-        <nav className="border-t border-sand/70 bg-cream px-5 pb-5 pt-4 md:hidden">
-          <div className="flex flex-col gap-1">
-            {links.map((link) => {
-              const active =
-                link.href === pathname ||
-                (link.href !== "/" && pathname.startsWith(link.href));
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  onClick={() => setOpen(false)}
-                  className={`rounded-lg px-3 py-2.5 text-sm transition-colors hover:bg-sand/40 hover:text-clay ${
-                    active ? "text-clay" : "text-espresso"
-                  }`}
-                >
-                  {link.label}
-                </Link>
-              );
-            })}
-            <div className="mt-3 border-t border-sand/60 pt-3">
+        <nav className="border-t border-neutral-100 bg-white px-5 pb-6 pt-4 md:hidden">
+          <div className="flex flex-col gap-0.5">
+            {allLinks.map(({ href, label }) => (
+              <Link
+                key={href}
+                href={href}
+                onClick={() => setOpen(false)}
+                className={`rounded-lg px-3 py-3 text-sm tracking-wide transition-colors hover:bg-neutral-50 hover:text-clay ${
+                  isActive(href) ? "text-clay" : "text-espresso/70"
+                }`}
+              >
+                {label}
+              </Link>
+            ))}
+            <div className="mt-4 border-t border-neutral-100 pt-4">
               <Link
                 href="/collection"
                 onClick={() => setOpen(false)}
-                className="block rounded-full bg-clay px-5 py-2.5 text-center text-sm text-white hover:bg-espresso"
+                className="block rounded-full bg-clay px-5 py-3 text-center text-sm tracking-wider text-white transition-colors hover:bg-espresso"
               >
                 View Collection
               </Link>
