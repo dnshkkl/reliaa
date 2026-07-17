@@ -59,12 +59,6 @@ function ReliaaLogo({ mobile }: { mobile?: boolean }) {
   const iImgH = iH * 2;          // render logo.png at 2× so container clips to chair only
   const iW = Math.round(iImgH * (1426 / 1504) * 0.8); // visible width (centre 80%)
 
-  // Wordmark natural width at the given height
-  const wNatW = Math.round(wH * (1206 / 443));
-  // Crop ~12% from the left of the wordmark (internal whitespace before the "R")
-  const wCrop = Math.round(wNatW * 0.12);
-  const wContW = wNatW - wCrop;
-
   return (
     <span className="flex items-center gap-0">
       {/* Chair icon — clipped to top half (chair only) */}
@@ -78,15 +72,13 @@ function ReliaaLogo({ mobile }: { mobile?: boolean }) {
         />
       </span>
 
-      {/* Wordmark — left whitespace cropped */}
-      <span className="relative block flex-shrink-0 overflow-hidden" style={{ width: wContW, height: wH }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/reliaa-wordmark.png"
-          alt="Reliaa — Innovation With Style"
-          style={{ position: "absolute", top: 0, left: -wCrop, height: wH, width: "auto" }}
-        />
-      </span>
+      {/* Wordmark */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/reliaa-wordmark.png"
+        alt="Reliaa — Innovation With Style"
+        style={{ height: wH, width: "auto", display: "block", marginLeft: "-6px" }}
+      />
     </span>
   );
 }
