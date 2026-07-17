@@ -60,7 +60,7 @@ function ReliaaLogo({ mobile }: { mobile?: boolean }) {
   const iW = Math.round(iImgH * (1426 / 1504) * 0.8); // visible width (centre 80%)
 
   return (
-    <span className="flex items-center gap-0">
+    <span className="flex items-center gap-2">
       {/* Chair icon — clipped to top half (chair only) */}
       <span className="relative block flex-shrink-0 overflow-hidden" style={{ width: iW, height: iH }}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -77,7 +77,7 @@ function ReliaaLogo({ mobile }: { mobile?: boolean }) {
       <img
         src="/reliaa-wordmark.png"
         alt="Reliaa — Innovation With Style"
-        style={{ height: wH, width: "auto", display: "block", marginLeft: "-8px" }}
+        style={{ height: wH, width: "auto", display: "block" }}
       />
     </span>
   );
