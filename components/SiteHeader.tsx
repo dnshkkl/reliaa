@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
@@ -51,73 +52,17 @@ function IcClose() {
   );
 }
 
-/*
- * Logo: logo.png is 1426×1504 (portrait, nearly square) with the
- * chair icon in the top ~57% and "Reliaa / Innovation With Style" below.
- * We clip to just the chair icon by rendering the image taller than the
- * container and cutting off the bottom with overflow:hidden.
- *
- * Then we render "Reliaa" in the LonghandLP script font next to it,
- * mirroring the Geeken-style icon + wordmark horizontal layout.
- */
 function ReliaaLogo({ mobile }: { mobile?: boolean }) {
-  // Container size — the visible square for the chair icon
-  const iconSize = mobile ? 50 : 62;
-  // Render the image taller so only the top ~57% (the chair) is visible
-  const imgHeight = Math.round(iconSize / 0.57);
-  // Font size for "Reliaa" wordmark
-  const fontSize = mobile ? "1.85rem" : "2.4rem";
-
   return (
-    <span className="flex items-center gap-2.5 md:gap-3">
-      {/* Chair icon — overflow-hidden crops the text portion of logo.png */}
-      <span
-        className="relative block flex-shrink-0 overflow-hidden"
-        style={{ width: iconSize, height: iconSize }}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/logo.png"
-          alt=""
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            top: 0,
-            left: "50%",
-            transform: "translateX(-50%)",
-            height: imgHeight,
-            width: "auto",
-          }}
-        />
-      </span>
-
-      {/* Wordmark */}
-      <span className="flex flex-col leading-none">
-        <span
-          style={{
-            fontFamily: "var(--font-script)",
-            fontSize,
-            color: "#D97329",
-            lineHeight: 1,
-            display: "block",
-          }}
-        >
-          Reliaa
-        </span>
-        <span
-          style={{
-            fontSize: mobile ? "8px" : "9px",
-            letterSpacing: "0.3em",
-            textTransform: "uppercase",
-            color: "rgba(92,42,10,0.4)",
-            marginTop: "4px",
-            display: "block",
-          }}
-        >
-          Furniture
-        </span>
-      </span>
-    </span>
+    <Image
+      src="/reliaa-wordmark.png"
+      alt="Reliaa — Innovation With Style"
+      width={1206}
+      height={443}
+      className="w-auto object-contain"
+      style={{ height: mobile ? "clamp(38px, 8vw, 50px)" : "clamp(50px, 5.5vw, 65px)" }}
+      priority
+    />
   );
 }
 
