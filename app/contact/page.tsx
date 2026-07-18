@@ -32,14 +32,24 @@ export default async function ContactPage({
             <div className="mt-8 space-y-5 text-espresso/80 md:mt-10 md:space-y-6">
               <div>
                 <h3 className="text-sm font-semibold uppercase tracking-widest text-clay">
-                  Factory &amp; Showroom
+                  Factory Address
                 </h3>
                 <p className="mt-2 leading-relaxed">
-                  214 Karmi Bijlamau
+                  216A &amp; 216B Karmi Bijlamau
                   <br />
-                  Kanpur Lucknow Highway, Next to Avon Dhaba
+                  Kanpur Lucknow Highway, Behind Avon Dhaba
                   <br />
                   Unnao – 209862, Uttar Pradesh, India
+                </p>
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold uppercase tracking-widest text-clay">
+                  Office Address
+                </h3>
+                <p className="mt-2 leading-relaxed">
+                  53 Sujat Ganj
+                  <br />
+                  Kanpur Nagar, U.P.
                 </p>
               </div>
               <div>
@@ -51,8 +61,8 @@ export default async function ContactPage({
                     +91 92350 31737
                   </a>
                   <br />
-                  <a href="tel:+918318734783" className="hover:text-clay">
-                    +91 83187 34783
+                  <a href="tel:+918400862222" className="hover:text-clay">
+                    +91 84008 62222
                   </a>
                 </p>
               </div>

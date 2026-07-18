@@ -219,12 +219,12 @@ export default function PrivacyPolicyPage() {
           </p>
           <address className="mt-4 not-italic space-y-1">
             <p className="font-semibold text-ink">Reliaa Furniture</p>
-            <p>214 Karmi Bijlamau, Kanpur Lucknow Highway, Next to Avon Dhaba, Unnao – 209862, Uttar Pradesh, India</p>
+            <p>216A &amp; 216B Karmi Bijlamau, Kanpur Lucknow Highway, Behind Avon Dhaba, Unnao – 209862, Uttar Pradesh, India</p>
             <p>
               Phone:{" "}
               <a href="tel:+919235031737" className="text-clay hover:underline">+91 92350 31737</a>
               {", "}
-              <a href="tel:+918318734783" className="text-clay hover:underline">+91 83187 34783</a>
+              <a href="tel:+918400862222" className="text-clay hover:underline">+91 84008 62222</a>
             </p>
             <p>
               Email:{" "}

@@ -24,13 +24,22 @@ export default function SiteFooter() {
             Visit Us
           </h3>
           <p className="mt-4 text-sm leading-relaxed text-cream/80">
-            214 Karmi Bijlamau
+            <span className="font-semibold text-cream/90">Factory Address</span>
+            <br />
+            216A &amp; 216B Karmi Bijlamau
             <br />
             Kanpur Lucknow Highway
             <br />
-            Next to Avon Dhaba
+            Behind Avon Dhaba
             <br />
             Unnao – 209862, U.P.
+          </p>
+          <p className="mt-4 text-sm leading-relaxed text-cream/80">
+            <span className="font-semibold text-cream/90">Office Address</span>
+            <br />
+            53 Sujat Ganj
+            <br />
+            Kanpur Nagar, U.P.
           </p>
         </div>
 
@@ -45,8 +54,8 @@ export default function SiteFooter() {
               </a>
             </li>
             <li>
-              <a href="tel:+918318734783" className="hover:text-clay">
-                +91 83187 34783
+              <a href="tel:+918400862222" className="hover:text-clay">
+                +91 84008 62222
               </a>
             </li>
             <li>

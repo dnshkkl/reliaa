@@ -54,7 +54,7 @@ export default function TermsPage() {
             <p className="font-semibold text-ink">Reliaa Furniture</p>
             <p>Founded by Mohd Sajid — Manufacturer &amp; Supplier of Premium Furniture</p>
             <p className="mt-2">
-              Factory Address: 214 Karmi Bijlamau, Kanpur Lucknow Highway, Next to Avon Dhaba,
+              Factory Address: 216A &amp; 216B Karmi Bijlamau, Kanpur Lucknow Highway, Behind Avon Dhaba,
               Unnao – 209862
             </p>
             <p>
@@ -71,7 +71,7 @@ export default function TermsPage() {
               Phone:{" "}
               <a href="tel:+919235031737" className="text-clay hover:underline">+91 92350 31737</a>
               {", "}
-              <a href="tel:+918318734783" className="text-clay hover:underline">+91 83187 34783</a>
+              <a href="tel:+918400862222" className="text-clay hover:underline">+91 84008 62222</a>
             </p>
           </address>
         </Section>
@@ -304,7 +304,7 @@ export default function TermsPage() {
               Phone:{" "}
               <a href="tel:+919235031737" className="text-clay hover:underline">+91 92350 31737</a>
               {", "}
-              <a href="tel:+918318734783" className="text-clay hover:underline">+91 83187 34783</a>
+              <a href="tel:+918400862222" className="text-clay hover:underline">+91 84008 62222</a>
             </p>
             <p>
               Website:{" "}
