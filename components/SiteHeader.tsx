@@ -60,26 +60,12 @@ function ReliaaLogo({ mobile }: { mobile?: boolean }) {
   const iW = Math.round(iImgH * (1426 / 1504) * 0.8); // visible width (centre 80%)
 
   return (
-    <span className="flex items-center gap-2">
-      {/* Chair icon — clipped to top half (chair only) */}
-      <span className="relative block flex-shrink-0 overflow-hidden" style={{ width: iW, height: iH }}>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/logo.png"
-          alt=""
-          aria-hidden="true"
-          style={{ position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)", height: iImgH, width: "auto" }}
-        />
-      </span>
-
-      {/* Wordmark */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="/reliaa-wordmark.png"
-        alt="Reliaa — Innovation With Style"
-        style={{ height: wH, width: "auto", display: "block" }}
-      />
-    </span>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src="/reliaa-wordmark.png"
+      alt="Reliaa — Innovation With Style"
+      style={{ height: wH, width: "auto", display: "block" }}
+    />
   );
 }
 
