@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useState } from "react";
 import type { Category, Product } from "@/lib/types";
 
 export default function CollectionGallery({
@@ -14,6 +14,29 @@ export default function CollectionGallery({
   initialCategory?: string;
 }) {
   const [active, setActive] = useState(initialCategory);
+
+  // On mount, restore the last filter the user had selected for this collection
+  // view. We key by the current URL (without any category param) so Back navigation
+  // always lands on the same sessionStorage entry that was written on the way out.
+  useLayoutEffect(() => {
+    const saved = sessionStorage.getItem(filterKey());
+    if (saved && saved !== "all" && categories.some((c) => c.slug === saved)) {
+      setActive(saved);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  function filterKey() {
+    const params = new URLSearchParams(window.location.search);
+    params.delete("category");
+    const qs = params.toString();
+    return `filter:${window.location.pathname}${qs ? `?${qs}` : ""}`;
+  }
+
+  function selectFilter(slug: string) {
+    setActive(slug);
+    sessionStorage.setItem(filterKey(), slug);
+  }
 
   const categoryIds = useMemo(() => new Set(categories.map((c) => c.id)), [categories]);
 
@@ -34,14 +57,14 @@ export default function CollectionGallery({
         <FilterChip
           label="All"
           active={active === "all"}
-          onClick={() => setActive("all")}
+          onClick={() => selectFilter("all")}
         />
         {categories.map((c) => (
           <FilterChip
             key={c.id}
             label={c.name}
             active={active === c.slug}
-            onClick={() => setActive(c.slug)}
+            onClick={() => selectFilter(c.slug)}
           />
         ))}
       </div>
