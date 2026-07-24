@@ -9,13 +9,14 @@ import {
   getProducts,
   getProjects,
   getReviews,
+  getVideoFeedItems,
   getWhyChooseImageUrl,
 } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  const [mainCategories, categories, products, projects, messages, heroSlides, whyChooseImageUrl, achievementSlides, clientSlides, reviews] =
+  const [mainCategories, categories, products, projects, messages, heroSlides, whyChooseImageUrl, achievementSlides, clientSlides, reviews, videoFeedItems] =
     await Promise.all([
       getMainCategories(),
       getCategories(),
@@ -27,6 +28,7 @@ export default async function AdminPage() {
       getAchievementSlides(),
       getClientSlides(),
       getReviews(),
+      getVideoFeedItems(),
     ]);
 
   return (
@@ -41,6 +43,7 @@ export default async function AdminPage() {
       achievementSlides={achievementSlides}
       clientSlides={clientSlides}
       reviews={reviews}
+      videoFeedItems={videoFeedItems}
     />
   );
 }

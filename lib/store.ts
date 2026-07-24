@@ -10,6 +10,7 @@ import type {
   Project,
   Message,
   Review,
+  VideoFeedItem,
 } from "./types";
 import { seedData } from "./seed";
 
@@ -120,6 +121,18 @@ function normalize(raw: unknown): StoreData {
       rating: r.rating ?? 5,
       createdAt: r.createdAt ?? new Date().toISOString(),
     })),
+    videoFeed: ((data as { videoFeed?: unknown[] }).videoFeed ?? []).map((v: unknown) => {
+      const item = v as Record<string, unknown>;
+      return {
+        id: (item.id as string) ?? randomUUID(),
+        videoUrl: (item.videoUrl as string) ?? "",
+        thumbnail: (item.thumbnail as string) ?? "",
+        productName: (item.productName as string) ?? "",
+        specs: Array.isArray(item.specs) ? (item.specs as string[]) : [],
+        sequence: typeof item.sequence === "number" ? item.sequence : 0,
+        createdAt: (item.createdAt as string) ?? new Date().toISOString(),
+      };
+    }),
   };
 }
 
@@ -209,6 +222,26 @@ export async function saveImage(file: File): Promise<string> {
 export async function saveImages(files: File[]): Promise<string[]> {
   const valid = files.filter((f) => f instanceof File && f.size > 0);
   return Promise.all(valid.map(saveImage));
+}
+
+export async function saveVideo(file: File): Promise<string> {
+  if (useCloud) {
+    const cloudinary = await getCloudinary();
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const dataUri = `data:${file.type || "video/mp4"};base64,${buffer.toString("base64")}`;
+    const result = await cloudinary.uploader.upload(dataUri, {
+      folder: "reliaa/videos",
+      public_id: randomUUID(),
+      resource_type: "video",
+    });
+    return result.secure_url;
+  }
+  const ext = path.extname(file.name).toLowerCase() || ".mp4";
+  const id = randomUUID();
+  await fs.mkdir(LOCAL_UPLOAD_DIR, { recursive: true });
+  const buffer = Buffer.from(await file.arrayBuffer());
+  await fs.writeFile(path.join(LOCAL_UPLOAD_DIR, `${id}${ext}`), buffer);
+  return `/uploads/${id}${ext}`;
 }
 
 async function deleteImage(imageUrl: string): Promise<void> {
@@ -715,4 +748,80 @@ export async function deleteReview(id: string): Promise<void> {
   const data = await readData();
   data.reviews = data.reviews.filter((r) => r.id !== id);
   await writeData(data);
+}
+
+// ---------------------------------------------------------------------------
+// Video Feed
+// ---------------------------------------------------------------------------
+
+export async function getVideoFeedItems(): Promise<VideoFeedItem[]> {
+  const data = await readData();
+  return [...data.videoFeed].sort((a, b) => a.sequence - b.sequence);
+}
+
+export async function addVideoFeedItem(input: {
+  videoUrl: string;
+  thumbnail: string;
+  productName: string;
+  specs: string[];
+  sequence: number;
+}): Promise<VideoFeedItem> {
+  const data = await readData();
+  const item: VideoFeedItem = {
+    id: randomUUID(),
+    videoUrl: input.videoUrl,
+    thumbnail: input.thumbnail,
+    productName: input.productName.trim(),
+    specs: input.specs.map((s) => s.trim()).filter(Boolean),
+    sequence: input.sequence,
+    createdAt: new Date().toISOString(),
+  };
+  data.videoFeed.push(item);
+  await writeData(data);
+  return item;
+}
+
+export async function updateVideoFeedItem(
+  id: string,
+  input: Partial<Omit<VideoFeedItem, "id" | "createdAt">>
+): Promise<void> {
+  const data = await readData();
+  const item = data.videoFeed.find((v) => v.id === id);
+  if (!item) return;
+  if (input.videoUrl !== undefined) item.videoUrl = input.videoUrl;
+  if (input.thumbnail !== undefined) item.thumbnail = input.thumbnail;
+  if (input.productName !== undefined) item.productName = input.productName.trim();
+  if (input.specs !== undefined) item.specs = input.specs.map((s) => s.trim()).filter(Boolean);
+  if (input.sequence !== undefined) item.sequence = input.sequence;
+  await writeData(data);
+}
+
+export async function deleteVideoFeedItem(id: string): Promise<void> {
+  const data = await readData();
+  const item = data.videoFeed.find((v) => v.id === id);
+  if (item) {
+    await Promise.allSettled([
+      deleteImage(item.thumbnail),
+      deleteVideoFile(item.videoUrl),
+    ]);
+  }
+  data.videoFeed = data.videoFeed.filter((v) => v.id !== id);
+  await writeData(data);
+}
+
+async function deleteVideoFile(url: string): Promise<void> {
+  try {
+    if (url.startsWith("/uploads/")) {
+      await fs.unlink(path.join(process.cwd(), "public", url));
+    } else if (url.includes("res.cloudinary.com")) {
+      const cloudinary = await getCloudinary();
+      const publicId = publicIdFromUrl(url);
+      if (publicId) {
+        await cloudinary.uploader.destroy(publicId, {
+          resource_type: "video",
+          invalidate: true,
+        });
+      }
+    }
+  } catch { /* ignore */ }
 }

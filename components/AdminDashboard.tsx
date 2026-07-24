@@ -4,9 +4,9 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import type { MainCategory, Category, Message, Product, Project, Review } from "@/lib/types";
+import type { MainCategory, Category, Message, Product, Project, Review, VideoFeedItem } from "@/lib/types";
 
-type Section = "main-categories" | "products" | "projects" | "categories" | "banners" | "hero-slides" | "why-choose" | "achievements" | "clients" | "reviews" | "inbox";
+type Section = "main-categories" | "products" | "projects" | "categories" | "banners" | "hero-slides" | "why-choose" | "achievements" | "clients" | "reviews" | "video-feed" | "inbox";
 
 // ─── Icons ───────────────────────────────────────────────────────────────────
 
@@ -98,6 +98,13 @@ function IcStar() {
     </svg>
   );
 }
+function IcVideo() {
+  return (
+    <svg className="h-[18px] w-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M15 10l4.553-2.069A1 1 0 0121 8.82v6.36a1 1 0 01-1.447.89L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z" />
+    </svg>
+  );
+}
 
 // ─── Root dashboard ───────────────────────────────────────────────────────────
 
@@ -121,6 +128,7 @@ export default function AdminDashboard({
   achievementSlides,
   clientSlides,
   reviews,
+  videoFeedItems,
 }: {
   mainCategories: MainCategory[];
   categories: Category[];
@@ -132,6 +140,7 @@ export default function AdminDashboard({
   achievementSlides: string[];
   clientSlides: string[];
   reviews: Review[];
+  videoFeedItems: VideoFeedItem[];
 }) {
   const router = useRouter();
   const [section, setSection] = useState<Section>("products");
@@ -162,6 +171,7 @@ export default function AdminDashboard({
     { id: "achievements",    label: "Achievements",     icon: <IcSlides />,  count: achievementSlides.length },
     { id: "clients",         label: "Our Clients",      icon: <IcSlides />,  count: clientSlides.length },
     { id: "reviews",         label: "Reviews",          icon: <IcStar />,    count: reviews.length    },
+    { id: "video-feed",      label: "Video Feed",       icon: <IcVideo />,   count: videoFeedItems.length },
     { id: "inbox",           label: "Inbox",            icon: <IcMail />,    badge: unread            },
   ];
 
@@ -270,6 +280,9 @@ export default function AdminDashboard({
           )}
           {section === "reviews" && (
             <ReviewsSection reviews={reviews} onChange={refresh} />
+          )}
+          {section === "video-feed" && (
+            <VideoFeedSection items={videoFeedItems} onChange={refresh} />
           )}
           {section === "inbox" && (
             <InboxSection messages={messages} onChange={refresh} />
@@ -2093,6 +2106,273 @@ function InboxSection({
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+// ─── Video Feed section ────────────────────────────────────────────────────────
+
+function VideoFeedSection({
+  items,
+  onChange,
+}: {
+  items: VideoFeedItem[];
+  onChange: () => void;
+}) {
+  const [adding, setAdding] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+
+  // Form state
+  const [productName, setProductName] = useState("");
+  const [specsText, setSpecsText] = useState("");
+  const [sequence, setSequence] = useState(items.length + 1);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [thumbFile, setThumbFile] = useState<File | null>(null);
+  const [videoPreview, setVideoPreview] = useState("");
+  const [thumbPreview, setThumbPreview] = useState("");
+
+  const sorted = [...items].sort((a, b) => a.sequence - b.sequence);
+
+  function resetForm() {
+    setProductName("");
+    setSpecsText("");
+    setSequence(items.length + 1);
+    setVideoFile(null);
+    setThumbFile(null);
+    setVideoPreview("");
+    setThumbPreview("");
+    setError("");
+    setAdding(false);
+  }
+
+  async function uploadFile(file: File, endpoint: string, fieldName: string): Promise<string> {
+    const fd = new FormData();
+    fd.append(fieldName, file);
+    const res = await fetch(endpoint, { method: "POST", body: fd });
+    if (!res.ok) {
+      const j = await res.json().catch(() => ({}));
+      throw new Error((j as { error?: string }).error ?? "Upload failed");
+    }
+    const j = await res.json() as { url: string };
+    return j.url;
+  }
+
+  async function handleSave() {
+    if (!productName.trim()) { setError("Product name is required."); return; }
+    if (!videoFile) { setError("Please choose a video file."); return; }
+    setSaving(true);
+    setError("");
+    try {
+      const [videoUrl, thumbnail] = await Promise.all([
+        uploadFile(videoFile, "/api/upload-video", "video"),
+        thumbFile ? uploadFile(thumbFile, "/api/upload", "image") : Promise.resolve(""),
+      ]);
+      const specs = specsText.split("\n").map((s) => s.trim()).filter(Boolean);
+      const res = await fetch("/api/video-feed", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ videoUrl, thumbnail, productName: productName.trim(), specs, sequence }),
+      });
+      if (!res.ok) throw new Error("Failed to save.");
+      onChange();
+      resetForm();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Something went wrong.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm("Delete this video?")) return;
+    await fetch(`/api/video-feed?id=${id}`, { method: "DELETE" });
+    onChange();
+  }
+
+  async function handleReorder(id: string, newSeq: number) {
+    await fetch("/api/video-feed", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, sequence: newSeq }),
+    });
+    onChange();
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-serif text-2xl text-ink">Video Feed</h2>
+          <p className="mt-1 text-sm text-espresso/60">
+            Vertical video reel shown at <a href="/videos" target="_blank" className="text-clay hover:underline">/videos</a>. Drag the order number to reorder.
+          </p>
+        </div>
+        {!adding && (
+          <button
+            onClick={() => { setAdding(true); setSequence(items.length + 1); }}
+            className="rounded-full bg-ink px-4 py-2 text-sm text-cream hover:bg-espresso"
+          >
+            + Add video
+          </button>
+        )}
+      </div>
+
+      {/* Add form */}
+      {adding && (
+        <div className="rounded-2xl border border-sand bg-white p-5 space-y-4">
+          <h3 className="font-medium text-ink">New video</h3>
+
+          <Field label="Product Name">
+            <input
+              value={productName}
+              onChange={(e) => setProductName(e.target.value)}
+              className="w-full rounded-lg border border-sand px-3 py-2 text-sm text-ink focus:border-clay focus:outline-none"
+              placeholder="e.g. Velvet Dining Chair"
+            />
+          </Field>
+
+          <Field label="Specs (one per line)">
+            <textarea
+              value={specsText}
+              onChange={(e) => setSpecsText(e.target.value)}
+              rows={4}
+              className="w-full rounded-lg border border-sand px-3 py-2 text-sm text-ink focus:border-clay focus:outline-none resize-none"
+              placeholder={"Frame structure stainless steel\nPVD coated\nFresh Foam"}
+            />
+          </Field>
+
+          <Field label="Sequence (display order)">
+            <input
+              type="number"
+              min={1}
+              value={sequence}
+              onChange={(e) => setSequence(Number(e.target.value))}
+              className="w-24 rounded-lg border border-sand px-3 py-2 text-sm text-ink focus:border-clay focus:outline-none"
+            />
+          </Field>
+
+          <Field label="Video file (MP4 / WebM, max 100 MB)">
+            <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-sand bg-[#f5f1ec] py-4 text-center hover:border-clay">
+              {videoPreview ? (
+                <video src={videoPreview} className="h-24 rounded" muted playsInline />
+              ) : (
+                <>
+                  <span className="text-xs text-espresso/50">Click to choose video</span>
+                  <span className="mt-0.5 text-[10px] text-espresso/40">MP4, WebM, MOV · 100 MB max</span>
+                </>
+              )}
+              <input
+                type="file"
+                accept="video/mp4,video/webm,video/quicktime"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) { setVideoFile(f); setVideoPreview(URL.createObjectURL(f)); }
+                }}
+              />
+            </label>
+          </Field>
+
+          <Field label="Thumbnail image (optional)">
+            <label className="flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-sand bg-[#f5f1ec] py-4 text-center hover:border-clay">
+              {thumbPreview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={thumbPreview} alt="" className="h-20 rounded object-cover" />
+              ) : (
+                <>
+                  <span className="text-xs text-espresso/50">Click to choose thumbnail</span>
+                  <span className="mt-0.5 text-[10px] text-espresso/40">JPG, PNG, WebP · 8 MB max</span>
+                </>
+              )}
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) { setThumbFile(f); setThumbPreview(URL.createObjectURL(f)); }
+                }}
+              />
+            </label>
+          </Field>
+
+          {error && <p className="text-sm text-red-500">{error}</p>}
+
+          <div className="flex gap-3">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="rounded-full bg-clay px-5 py-2 text-sm text-white hover:bg-espresso disabled:opacity-50"
+            >
+              {saving ? "Saving…" : "Save video"}
+            </button>
+            <button onClick={resetForm} className="rounded-full border border-sand px-5 py-2 text-sm text-espresso hover:bg-sand/40">
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Existing items list */}
+      {sorted.length === 0 && !adding ? (
+        <EmptyState label="No videos yet — add your first one." />
+      ) : (
+        <div className="space-y-3">
+          {sorted.map((item, idx) => (
+            <div key={item.id} className="flex items-center gap-4 rounded-2xl border border-sand bg-white p-4">
+              {/* Sequence control */}
+              <div className="flex flex-col items-center gap-1">
+                <button
+                  disabled={idx === 0}
+                  onClick={() => handleReorder(item.id, item.sequence - 1.5)}
+                  className="text-espresso/40 hover:text-clay disabled:opacity-20 text-xs"
+                >▲</button>
+                <span className="w-6 text-center text-xs font-medium text-espresso/60">{idx + 1}</span>
+                <button
+                  disabled={idx === sorted.length - 1}
+                  onClick={() => handleReorder(item.id, item.sequence + 1.5)}
+                  className="text-espresso/40 hover:text-clay disabled:opacity-20 text-xs"
+                >▼</button>
+              </div>
+
+              {/* Thumbnail */}
+              {item.thumbnail ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={item.thumbnail} alt="" className="h-16 w-16 flex-shrink-0 rounded-lg object-cover ring-1 ring-sand" />
+              ) : (
+                <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-sand/60">
+                  <IcVideo />
+                </div>
+              )}
+
+              {/* Info */}
+              <div className="min-w-0 flex-1">
+                <p className="truncate font-medium text-ink">{item.productName}</p>
+                {item.specs.length > 0 && (
+                  <p className="mt-0.5 truncate text-xs text-espresso/60">{item.specs.join(" · ")}</p>
+                )}
+                <a
+                  href={item.videoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1 inline-block text-[11px] text-clay hover:underline"
+                >
+                  View video ↗
+                </a>
+              </div>
+
+              {/* Delete */}
+              <button
+                onClick={() => handleDelete(item.id)}
+                className="ml-auto flex-shrink-0 rounded-full border border-red-100 px-3 py-1 text-xs text-red-400 hover:bg-red-50 hover:text-red-600"
+              >
+                Delete
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

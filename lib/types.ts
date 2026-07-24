@@ -59,6 +59,16 @@ export interface Review {
   createdAt: string;
 }
 
+export interface VideoFeedItem {
+  id: string;
+  videoUrl: string;
+  thumbnail: string;
+  productName: string;
+  specs: string[];
+  sequence: number;
+  createdAt: string;
+}
+
 export interface StoreData {
   mainCategories: MainCategory[];
   categories: Category[];
@@ -70,4 +80,5 @@ export interface StoreData {
   achievementSlides: string[];
   clientSlides: string[];
   reviews: Review[];
+  videoFeed: VideoFeedItem[];
 }
